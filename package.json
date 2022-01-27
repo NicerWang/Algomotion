@@ -1,0 +1,18 @@
+{
+  "name": "algomotion",
+  "version": "0.0.1",
+  "description": "A simple canvas painting util for algorithm visualization",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NicerWang/Algomotion.git"
+  },
+  "author": "NicerWang",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/NicerWang/Algomotion/issues"
+  },
+  "homepage": "https://github.com/NicerWang/Algomotion#readme"
+}
