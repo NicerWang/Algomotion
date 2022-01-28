@@ -1,6 +1,6 @@
-import {threeBezier} from '../../bezier';
-import {nonlinear} from "../../motion";
-import {PromiseQueue} from "../../utils";
+import {threeBezier} from '../../bezier/index.js';
+import {nonlinear} from "../../motion/index.js";
+import {PromiseQueue} from "../../utils/index.js";
 
 let set;
 let info;
