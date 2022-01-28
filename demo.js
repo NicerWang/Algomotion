@@ -1,4 +1,4 @@
-import {init, destroy, swapBlock, emphasizeBlock, clearEmphasize, removeBlock, addBlock} from "./type/array";
+import {init, destroy, swapBlock, emphasizeBlock, clearEmphasize, removeBlock, addBlock} from "./type/array/index.js";
 window.onload = () => {
     let canvas = document.getElementById("canvas")
     let set = {

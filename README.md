@@ -10,7 +10,7 @@ npm i algomotion
 
 ## Demo
 
-[Click Here](./demo.html)
+[Click Here](https://nicerwang.github.io/Algomotion/demo.html)
 
 ![0.0.2](https://pictures-nicerwang-1256891306.cos.ap-beijing.myqcloud.com//img0.0.2.gif)
 
