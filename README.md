@@ -10,9 +10,11 @@ npm i algomotion
 
 ## Demo
 
-> For Vue3
+[Click Here](./demo.html)
 
 ![0.0.2](https://pictures-nicerwang-1256891306.cos.ap-beijing.myqcloud.com//img0.0.2.gif)
+
+* For Vue3
 
 ```vue
 <template>
