@@ -1,33 +1,57 @@
-import {init, destroy, swapBlock, emphasizeBlock, clearEmphasize, removeBlock, addBlock} from "./type/array/index.js";
+import {init, destroy, swapBlock, emphasizeBlock, clear, removeBlock, addBlock, pause, addBarrier, setPosition} from "./type/array/index.js";
+
 window.onload = () => {
     let canvas = document.getElementById("canvas")
     let set = {
         hidpi: true,
         height: 250,
         width: 800,
+        motion: true
     }
     let info = {
         'dta': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-        'mvs': []
+        'mvs': ['get(0)', 'get(1)', 'swap(0,1)', 'get(2)', 'get(3)', 'swap(2,3)', 'get(4)', 'get(5)', 'swap(4,5)']
     }
     init(set, info, canvas);
-    document.querySelector("#add").onclick = ()=>{
-        addBlock(3,11)
+    document.querySelector("#add").onclick = () => {
+        addBlock(4, 88)
     }
-    document.querySelector("#remove").onclick = ()=>{
-        removeBlock(3)
+    document.querySelector("#remove").onclick = () => {
+        removeBlock(2)
     }
-    document.querySelector("#clear").onclick = ()=>{
-        clearEmphasize()
+    document.querySelector("#clear").onclick = () => {
+        clear()
     }
-    document.querySelector("#swap").onclick = ()=>{
-        swapBlock(2,7)
+    document.querySelector("#swap").onclick = () => {
+        swapBlock(0, 3)
     }
-    window.status = false;
-    document.querySelector("#emp").onclick = ()=>{
-        emphasizeBlock(3,window.status);
-        window.status = !window.status
+    document.status = false;
+    document.querySelector("#emp").onclick = () => {
+        document.status = !document.status
+        emphasizeBlock(3, document.status);
+        if(document.status){
+            document.querySelector("#emp").innerHTML = "unEmphasize(3th)"
+        }
+        else{
+            document.querySelector("#emp").innerHTML = "Emphasize(3th)"
+
+        }
     }
+    document.querySelector("#barrier").onclick = () => {
+        addBarrier(3);
+    }
+    document.querySelector("#ctl_c").onclick = () => {
+        pause(false)
+    }
+    document.querySelector("#ctl_p").onclick = () => {
+        pause(true)
+    }
+    document.querySelector("#setPosition").onclick = () => {
+        let val = document.querySelector("#selector").value
+        console.log(val)
+        setPosition(val)
+    }
+
 
 }
 window.onunload = () => {
