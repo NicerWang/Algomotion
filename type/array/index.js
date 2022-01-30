@@ -1,6 +1,6 @@
 import {threeBezier} from '../../bezier/index.js';
 import {nonlinear} from "../../motion/index.js";
-import {PromiseQueue} from "../../utils/index.js";
+import {__drawRect, __fillNumber, PromiseQueue} from "../../utils/index.js";
 
 let set;
 let ctx;
@@ -81,7 +81,7 @@ function __show() {
                         _drawBlock(i);
                     }
                     resolve()
-                    
+
                 }
             }, set.fps)
         })
@@ -104,46 +104,25 @@ function __updateGap(length) {
 /*
     Draw Functions
 */
-function __drawRect(x, y, w, h, r) {
-    ctx.clearRect(x - ctx.lineWidth, y - ctx.lineWidth, set.blockSize + 2 * ctx.lineWidth, set.blockSize + 2 * ctx.lineWidth);
-    let path = new Path2D();
-    path.moveTo(x + r, y);
-    path.lineTo(x + w - r, y);
-    path.arc(x + w - r, y + r, r, Math.PI / 180 * 270, 0, false);
-    path.lineTo(x + w, y + h - r);
-    path.arc(x + w - r, y + h - r, r, 0, Math.PI / 180 * 90, false);
-    path.lineTo(x + r, y + h);
-    path.arc(x + r, y + h - r, r, Math.PI / 180 * 90, Math.PI / 180 * 180, false);
-    path.lineTo(x, y + r);
-    path.arc(x + r, y + r, r, Math.PI / 180 * 180, Math.PI / 180 * 270, false);
-    ctx.fill(path);
-}
-
-function __fillNumber(num, font, x, y, w, h) {
-    let startX = x + w / 2;
-    let startY = y + h / 2;
-    ctx.font = font + "px monospace";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(String(num), startX, startY);
-}
-
 function _rect(num, x, y, w, h, r) {
     ctx.fillStyle = set.fillColor;
-    __drawRect(x, y, w, h, r);
+    __drawRect(x, y, w, h, r, ctx);
     ctx.fillStyle = set.textColor;
-    __fillNumber(num, set.font, x, y, w, h);
+    __fillNumber(num, set.font, x, y, w, h, ctx);
 }
 
 function _emphasizeRect(num, x, y, w, h, r) {
     ctx.fillStyle = set.emphasisColor;
-    __drawRect(x, y, w, h, r);
+    __drawRect(x, y, w, h, r, ctx);
     ctx.fillStyle = set.emphasisTextColor;
-    __fillNumber(num, set.font + 5, x, y, w, h);
+    __fillNumber(num, set.font + 5, x, y, w, h, ctx);
 }
 
-function _drawBlock(idx, isEmphasized = false) {
+function _drawBlock(idx, isEmphasized = false, needClear = false) {
     let pos = gap + (gap + set.blockSize) * idx;
+    if (needClear) {
+        ctx.clearRect(pos - ctx.lineWidth, mid - ctx.lineWidth, set.blockSize + 2 * ctx.lineWidth, set.blockSize + 2 * ctx.lineWidth);
+    }
     if (!isEmphasized && !emphasized[idx]) {
         _rect(dta[idx], pos, mid, set.blockSize, set.blockSize, set.blockRadius)
     } else {
@@ -213,13 +192,13 @@ function _swap(idx1, idx2, p1x, p1y, p2x, p2y, offset) {
                 }
                 ctx.fillStyle = 'rgba(255,255,255,0.3)';
                 ctx.fillRect(changedX, changedY, changedWidth, changedHeight);
+                for (let i = idx1 + 1; i < idx2; i++) {
+                    _drawBlock(i)
+                }
                 [x1, y1] = threeBezier(process / 100, [p1x, p1y], [p1x, p1y + offset], [p2x, p2y + offset], [p2x, p2y]);
                 [x2, y2] = threeBezier(process / 100, [p2x, p2y], [p2x, p2y - offset], [p1x, p1y - offset], [p1x, p1y]);
                 _emphasizeRect(dta[idx1], x1, y1, set.blockSize, set.blockSize, set.blockRadius)
                 _emphasizeRect(dta[idx2], x2, y2, set.blockSize, set.blockSize, set.blockRadius)
-                for (let i = idx1 + 1; i < idx2; i++) {
-                    _drawBlock(i)
-                }
                 process += nonlinear(process, set.speed)
             }, set.fps);
         })
@@ -237,15 +216,15 @@ function _remove(idx) {
                     return
                 }
                 if (pq.paused) return;
-                _drawBlock(idx)
+                _drawBlock(idx, emphasized[idx], true)
                 ctx.globalAlpha -= 0.025
                 if (ctx.globalAlpha < 0.1) {
                     ctx.globalAlpha = 0
-                    _drawBlock(idx)
+                    _drawBlock(idx, emphasized[idx], true)
                     clearInterval(timer)
                     ctx.globalAlpha = 1
                     resolve()
-                    
+
                 }
             }, set.fps)
         });
@@ -359,7 +338,7 @@ function _add(idx, num) {
                     _drawBlock(idx)
                     clearInterval(timer)
                     resolve()
-                    
+
                 }
             }, set.fps)
         })
@@ -430,10 +409,12 @@ function setMovesReader(movesReader) {
 
 function setPosition(pos) {
     pq.stop()
+    ctx.globalAlpha = 1
     setTimeout(() => {
         barrier = kfs[pos].barrier.concat();
         emphasized = kfs[pos].emphasized.concat();
         dta = kfs[pos].dta.concat();
+        gap = __updateGap(dta.length)
         ctx.clearRect(0, 0, set.width, set.height)
         for (let i = 0; i < dta.length; i++) {
             _drawBlock(i)
