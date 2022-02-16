@@ -10,9 +10,9 @@ npm i algomotion
 
 ## Demo
 
-* Array(数组) [Click Here](https://nicerwang.github.io/Algomotion/demo-array.html)
-
-* Tree(树结构) [Click Here](https://nicerwang.github.io/Algomotion/demo-tree.html)
+* Array(数组) [Here](https://nicerwang.github.io/Algomotion/demo-array.html)
+* Tree(树结构) [Here](https://nicerwang.github.io/Algomotion/demo-tree.html)
+* Graph(图)(可选) 基于`Echarts`,暂无Demo.
 
 ## API
 
@@ -103,3 +103,49 @@ npm i algomotion
 | `addNode(idx,num)`           | 添加一个新结点                                |
 | `removeNode(idx)`            | 删除一个结点                                  |
 
+### Graph(Optional)
+
+碍于时间和技术所限，为达到较好效果，基于`Echarts`实现，仅需要使用图时才需引入`Echarts`依赖，使用数组和树时无需引入。
+
+* 推荐`Option`
+
+  ```javascript
+  option = {
+    series: [
+      {
+      type: 'graph',
+      layout: 'force',
+      animation: false,
+      silent: true,
+      color: '#14cdc8',
+      label: {
+      show: true,
+      color: '#eefcf5',
+      fontSize: 20
+      },
+      lineStyle: {
+      color: '#14cdc8',
+      width: 5,
+      opacity: 1
+      },
+      force: {
+      repulsion: 200,
+      edgeLength: 100
+      },
+      symbolSize: 40,
+      data: data,
+      edges: edges
+      }
+    ]
+  };
+  ```
+
+* 提供的辅助函数
+
+  | 名称                                                         | 作用                                                         |
+  | ------------------------------------------------------------ | ------------------------------------------------------------ |
+  | `matrixReader(labels,matrix)`                                | 提供每个结点的标签和邻接矩阵，返回`Option`中的`data`和`edges` |
+  | `emphasizeLink(idx1, idx2, edges, newWidth = 10, newColor = '#1c474d') ` | 突出显示边，返回新`edges`                                    |
+  | `emphasizeNode(idx, data, newSize = 60, newColor = '#1c474d') ` | 突出显示结点，返回新`data`                                   |
+
+  
