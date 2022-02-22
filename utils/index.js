@@ -33,6 +33,8 @@ export class PromiseQueue {
     }
     destroy() {
         this.stopped = true;
+        this.queue.length = 0;
+        this.indexQueue.length = 0;
         clearInterval(this.timer);
     }
     stop(){

@@ -523,11 +523,20 @@ function emphasizeNode(idx, status, _pos = 0) {
             const [x, y] = __positionCalculator(idx, set.layerHeight, set.blockSize);
             emphasized[idx] = status
             _drawBlock(idx, false)
-
             _drawBlock(Math.floor((idx - 1) / 2), false, false)
-            setTimeout(() => {
-                resolve()
-            }, 200)
+            let process = 0
+            let timer = setInterval(function () {
+                if (pq.stopped) {
+                    pq.lock = false
+                    clearInterval(timer)
+                    return
+                }
+                if (pq.paused) return;
+                process += 10
+                if (process > 100) {
+                    resolve()
+                }
+            }, 30)
 
         })
     }

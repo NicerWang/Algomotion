@@ -431,8 +431,10 @@ function destroy() {
     dta = null
     barrier = null
     emphasized = null
-    kfs = null
-    pq = null
+    dta = [];
+    barrier = [];
+    emphasized = [];
+    kfs = [];
 }
 
 function swapBlock(idx1, idx2, _pos = 0) {
@@ -450,10 +452,19 @@ function emphasizeBlock(idx, status, _pos = 0) {
             } else {
                 _drawBlock(idx, false)
             }
-            setTimeout(() => {
-                resolve()
-            }, 300)
-
+            let process = 0
+            let timer = setInterval(function () {
+                if (pq.stopped) {
+                    pq.lock = false
+                    clearInterval(timer)
+                    return
+                }
+                if (pq.paused) return;
+                process += 10
+                if (process > 100) {
+                    resolve()
+                }
+            }, 30)
         })
     }
     pq.push(emphasizeMotion, _pos)
