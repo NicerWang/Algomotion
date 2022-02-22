@@ -60,7 +60,7 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
             kf = Object.assign({}, kfs[i])
         }
         if (op[1] === "swap") {
-            swapNode(argus[0], argus[1])
+            swapNode(argus[0], argus[1], i)
             if (isInit) {
                 kf.emphasized = kf.emphasized.concat()
                 for (let i = 0; i < kf.emphasized.length; i++) {
@@ -73,21 +73,21 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
                 kfs.push(kf);
             }
         } else if (op[1] === "get") {
-            emphasizeNode(argus[0], true)
+            emphasizeNode(argus[0], true, i)
             if (isInit) {
                 kf.emphasized = kf.emphasized.concat()
                 kf.emphasized[argus[0]] = true;
                 kfs.push(kf);
             }
         } else if (op[1] === "insert") {
-            addNode(argus[0], argus[1])
+            addNode(argus[0], argus[1], i)
             if (isInit) {
                 kf.dta = kf.dta.concat()
                 kf.dta[argus[0]] = argus[1];
                 kfs.push(kf);
             }
         } else if (op[1] === "remove") {
-            removeNode(argus[0])
+            removeNode(argus[0], i)
             if (isInit) {
                 kf.dta = kf.dta.concat()
                 kf.dta[argus[0]] = undefined;
@@ -97,7 +97,7 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
     }
 }
 
-function __show() {
+function __show(_pos = 0) {
     let showNodeMotion = () => {
         return new Promise((resolve, reject) => {
             ctx.globalAlpha = 0;
@@ -158,8 +158,8 @@ function __show() {
             }, set.fps)
         })
     }
-    pq.push(showNodeMotion)
-    pq.push(showLineMotion)
+    pq.push(showNodeMotion, _pos)
+    pq.push(showLineMotion, _pos)
 }
 
 function __updateParam() {
@@ -174,11 +174,13 @@ function __updateParam() {
     }
     let newLayer = __getLayer(len)
     if (newLayer * set.layerHeight > set.height) {
+        console.info("[AlgoMotion] Block size will be modified to fit screen.")
         let scale = (set.height / newLayer) / set.layerHeight
         newLayerHeight = set.layerHeight * scale
         newBlockSize = set.blockSize * scale
     }
     if (newLayer * set.layerHeight < set.height) {
+        console.info("[AlgoMotion] Block size will be modified to fit screen.")
         let scale = (set.height / newLayer) / set.layerHeight
         newLayerHeight = set.layerHeight * scale
         newBlockSize = set.blockSize * scale
@@ -247,7 +249,7 @@ function _drawBlock(idx, needClear = false, drawLine = true, drawBlock = true) {
 /*
     Motion Functions
 */
-function _swap(idx1, idx2) {
+function _swap(idx1, idx2, _pos = 0) {
     let swapMotion = () => {
         return new Promise((resolve, reject) => {
             let process = 0;
@@ -294,10 +296,10 @@ function _swap(idx1, idx2) {
             }, set.fps);
         })
     }
-    pq.push(swapMotion)
+    pq.push(swapMotion, _pos)
 }
 
-function _remove(idx) {
+function _remove(idx, _pos = 0) {
     let shrinkMotion = () => {
         return new Promise((resolve, reject) => {
             const [x, y] = __positionCalculator(idx, set.layerHeight, set.blockSize);
@@ -358,11 +360,11 @@ function _remove(idx) {
             }, set.fps)
         });
     }
-    pq.push(shrinkMotion)
-    pq.push(removeMotion)
+    pq.push(shrinkMotion, _pos)
+    pq.push(removeMotion, _pos)
 }
 
-function _add(idx, num) {
+function _add(idx, num, _pos = 0) {
     let addMotion = () => {
         return new Promise((resolve, reject) => {
             dta[idx] = num;
@@ -419,14 +421,15 @@ function _add(idx, num) {
             }, set.fps)
         })
     }
-    pq.push(addMotion)
-    pq.push(extendMotion)
+    pq.push(addMotion, _pos)
+    pq.push(extendMotion, _pos)
 }
 
 /*
     User Interfaces
 */
 function init(setting, information, element) {
+    console.info("[AlgoMotion] Homepage: https://github.com/NicerWang/Algomotion")
     let dpr = window.devicePixelRatio
     if (setting.hidpi === false) {
         dpr = 1
@@ -454,9 +457,9 @@ function init(setting, information, element) {
     element.setAttribute('height', set.height)
     element.setAttribute('style', "width:" + set.width / dpr + "px;height:" + set.height / dpr + "px")
     ctx = element.getContext('2d')
-    pq = new PromiseQueue()
+    pq = new PromiseQueue(setting.motion,setting.position)
     if (!ctx) {
-        alert("[Error]Your browser does not support canvas!")
+        alert("[AlgoMotion][Error] Your browser does not support canvas!")
         return
     }
     dta = info.dta
@@ -510,11 +513,11 @@ function destroy() {
     pq = null
 }
 
-function swapNode(idx1, idx2) {
-    _swap(idx1, idx2);
+function swapNode(idx1, idx2, _pos) {
+    _swap(idx1, idx2, _pos);
 }
 
-function emphasizeNode(idx, status) {
+function emphasizeNode(idx, status, _pos = 0) {
     let emphasizeMotion = () => {
         return new Promise((resolve, reject) => {
             const [x, y] = __positionCalculator(idx, set.layerHeight, set.blockSize);
@@ -528,7 +531,7 @@ function emphasizeNode(idx, status) {
 
         })
     }
-    pq.push(emphasizeMotion)
+    pq.push(emphasizeMotion, _pos)
 }
 
 function clear() {
@@ -538,12 +541,12 @@ function clear() {
     __show();
 }
 
-function removeNode(idx) {
-    _remove(idx)
+function removeNode(idx, _pos) {
+    _remove(idx, _pos)
 }
 
-function addNode(idx, num) {
-    _add(idx, num)
+function addNode(idx, num, _pos = 0) {
+    _add(idx, num, _pos)
 }
 
 export {

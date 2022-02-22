@@ -13,11 +13,22 @@ import {
 
 window.onload = () => {
     let canvas = document.getElementById("canvas")
+    let position = {
+        value:0
+    }
+    let preValue = 0;
+    setInterval(()=>{
+        if(position.value !== preValue){
+            console.log(position.value)
+            preValue = position.value
+        }
+    },200)
     let set = {
         hidpi: true,
         height: 250,
         width: 800,
-        motion: true
+        motion: true,
+        position: [position]
     }
     let info = {
         'dta': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],

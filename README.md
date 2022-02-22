@@ -22,19 +22,34 @@ npm i algomotion
 
 * Set
 
-  | 名称                | 含义（涉及数字，单位均为px） | 默认值  |
-  | ------------------- | ---------------------------- | ------- |
-  | `height`            | `Canvas`高度                 | 250     |
-  | `width`             | `Canvas`宽度                 | 800     |
-  | `blockMaxSize`      | 数字块最大边长(圆形直径)     | 50      |
-  | `emphasisColor`     | 强调块背景色                 | #bedce3 |
-  | `emphasisTextColor` | 强调块字体颜色               | #1c474d |
-  | `textColor`         | 普通块字体颜色               | #eefcf5 |
-  | `fillColor`         | 普通块背景色                 | #14cdc8 |
-  | `font`              | 数字大小                     | 20      |
-  | `hidpi`             | HiDPI支持                    | true    |
-  | `fps`               | 动画帧率                     | 60      |
-  | `speed`             | 动画执行速度                 | 1.0     |
+  | 名称                | 含义（涉及数字，单位均为px）               | 默认值    |
+  | ------------------- | ------------------------------------------ | --------- |
+  | `height`            | `Canvas`高度                               | 250       |
+  | `width`             | `Canvas`宽度                               | 800       |
+  | `blockMaxSize`      | 数字块最大边长(圆形直径)                   | 50        |
+  | `emphasisColor`     | 强调块背景色                               | #bedce3   |
+  | `emphasisTextColor` | 强调块字体颜色                             | #1c474d   |
+  | `textColor`         | 普通块字体颜色                             | #eefcf5   |
+  | `fillColor`         | 普通块背景色                               | #14cdc8   |
+  | `font`              | 数字大小                                   | 20        |
+  | `hidpi`             | HiDPI支持                                  | true      |
+  | `fps`               | 动画帧率                                   | 60        |
+  | `speed`             | 动画执行速度                               | 1.0       |
+  | `motion`            | 是否使用`movesReader`读取`mvs`中的操作步骤 | false     |
+  | `postion`           | 启用`motion`时，绑定`mvs`执行的进度        | undefined |
+
+> `position`使用方法：
+>
+> * `Vue`
+>
+> ```vue
+> let value = ref(0);
+> let set = {
+> 	position: [value]
+> }
+> ```
+>
+> * 普通`JS`请查看`Demo`源码，`postion`会在控制台打印。
 
 * info
 

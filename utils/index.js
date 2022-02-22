@@ -1,26 +1,35 @@
 export class PromiseQueue {
     paused = false;
     stopped = false;
+    motion = false;
     lock = false;
     interval = 100;
     timer = null;
     queue = [];
-    constructor(interval) {
-        this.interval = interval;
+    indexQueue = [];
+    constructor(motion, position) {
+        this.motion = motion;
+        this.position = position;
         this.lock = false;
         this.interval = 100;
         this.timer = setInterval( async () => {
             if (this.queue.length > 0 && !this.lock) {
                 this.lock = true;
                 const f = this.queue.shift();
+                if(this.motion){
+                    this.position[0].value = this.indexQueue.shift();
+                }
                 await f();
                 this.lock = false;
             }
         }, this.interval);
     }
-    push(f) {
+    push(f,idx) {
         this.stopped = false;
         this.queue.push(f);
+        if(this.motion) {
+            this.indexQueue.push(idx);
+        }
     }
     destroy() {
         this.stopped = true;

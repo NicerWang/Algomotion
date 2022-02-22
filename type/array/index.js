@@ -35,7 +35,7 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
             kf = Object.assign({}, kfs[i])
         }
         if (op[1] === "swap") {
-            swapBlock(argus[0], argus[1])
+            swapBlock(argus[0], argus[1], i)
             if (isInit) {
                 kf.emphasized = kf.emphasized.concat()
                 for (let i = 0; i < kf.emphasized.length; i++) {
@@ -48,7 +48,8 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
                 kfs.push(kf);
             }
         } else if (op[1] === "get") {
-            emphasizeBlock(argus[0], true)
+            emphasizeBlock(argus[0], true, i)
+            emphasizeBlock(argus[0], false, i)
             if (isInit) {
                 kf.emphasized = kf.emphasized.concat()
                 kf.emphasized[argus[0]] = true;
@@ -58,7 +59,7 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
     }
 }
 
-function __show() {
+function __show(_pos = 0) {
     let showMotion = () => {
         return new Promise((resolve, reject) => {
             ctx.globalAlpha = 0;
@@ -86,16 +87,16 @@ function __show() {
             }, set.fps)
         })
     }
-    pq.push(showMotion)
+    pq.push(showMotion, _pos)
 }
 
 function __updateGap(length) {
     if (length * (set.blockSize + 4) > set.width) {
-        console.info("Block size will be modified to fit screen.")
+        console.info("[AlgoMotion] Block size will be modified to fit screen.")
         set.blockSize = Math.floor(set.width / length) - 4
     }
     if (length * (set.blockSize + 4) < set.width && length * (set.blockMaxSize + 4) < set.width) {
-        console.info("Block size will be modified to fit screen.")
+        console.info("[AlgoMotion] Block size will be modified to fit screen.")
         set.blockSize = set.blockMaxSize
     }
     return Math.min((set.width - length * set.blockSize) / (length + 2), set.maxGap)
@@ -147,11 +148,10 @@ function _drawBarrier(pos) {
     ctx.fill();
 }
 
-
 /*
     Motion Functions
 */
-function _swap(idx1, idx2, p1x, p1y, p2x, p2y, offset) {
+function _swap(idx1, idx2, p1x, p1y, p2x, p2y, offset, _pos) {
     let swapMotion = () => {
         return new Promise((resolve, reject) => {
             let changedX = Math.min(p1x, p2x) - ctx.lineWidth;
@@ -203,10 +203,10 @@ function _swap(idx1, idx2, p1x, p1y, p2x, p2y, offset) {
             }, set.fps);
         })
     }
-    pq.push(swapMotion)
+    pq.push(swapMotion, _pos)
 }
 
-function _remove(idx) {
+function _remove(idx, _pos) {
     let removeMotion = () => {
         return new Promise((resolve, reject) => {
             let timer = setInterval(function () {
@@ -224,7 +224,6 @@ function _remove(idx) {
                     clearInterval(timer)
                     ctx.globalAlpha = 1
                     resolve()
-
                 }
             }, set.fps)
         });
@@ -271,11 +270,11 @@ function _remove(idx) {
             }, set.fps);
         })
     }
-    pq.push(removeMotion)
-    pq.push(moveMotion)
+    pq.push(removeMotion, _pos)
+    pq.push(moveMotion, _pos)
 }
 
-function _add(idx, num) {
+function _add(idx, num, _pos) {
     let moveMotion = () => {
         return new Promise((resolve, reject) => {
             let newGap = __updateGap(dta.length + 1);
@@ -343,14 +342,15 @@ function _add(idx, num) {
             }, set.fps)
         })
     }
-    pq.push(moveMotion)
-    pq.push(addMotion)
+    pq.push(moveMotion, _pos)
+    pq.push(addMotion, _pos)
 }
 
 /*
     User Interfaces
 */
 function init(setting, information, element) {
+    console.info("[AlgoMotion] Homepage: https://github.com/NicerWang/Algomotion")
     let dpr = window.devicePixelRatio
     if (setting.hidpi === false) {
         dpr = 1
@@ -381,9 +381,9 @@ function init(setting, information, element) {
     element.setAttribute('height', set.height)
     element.setAttribute('style', "width:" + set.width / dpr + "px;height:" + set.height / dpr + "px")
     ctx = element.getContext('2d')
-    pq = new PromiseQueue()
+    pq = new PromiseQueue(setting.motion, setting.position)
     if (!ctx) {
-        alert("[Error]Your browser does not support canvas!")
+        alert("[AlgoMotion][Error] Your browser does not support canvas!")
         return
     }
     dta = info.dta
@@ -441,11 +441,11 @@ function destroy() {
     pq = null
 }
 
-function swapBlock(idx1, idx2) {
-    _swap(idx1, idx2, gap + (set.blockSize + gap) * idx1, mid, gap + (set.blockSize + gap) * idx2, mid, set.motionOffset);
+function swapBlock(idx1, idx2, _pos = 0) {
+    _swap(idx1, idx2, gap + (set.blockSize + gap) * idx1, mid, gap + (set.blockSize + gap) * idx2, mid, set.motionOffset, _pos);
 }
 
-function emphasizeBlock(idx, status) {
+function emphasizeBlock(idx, status, _pos = 0) {
     let emphasizeMotion = () => {
         return new Promise((resolve, reject) => {
             let pos = gap + (gap + set.blockSize) * idx;
@@ -458,14 +458,14 @@ function emphasizeBlock(idx, status) {
             }
             setTimeout(() => {
                 resolve()
-            }, 200)
+            }, 300)
 
         })
     }
-    pq.push(emphasizeMotion)
+    pq.push(emphasizeMotion, _pos)
 }
 
-function addBarrier(idx) {
+function addBarrier(idx, _pos = 0) {
     let barrierMotion = () => {
         return new Promise((resolve, reject) => {
             barrier[idx] = true;
@@ -476,23 +476,23 @@ function addBarrier(idx) {
 
         })
     }
-    pq.push(barrierMotion)
+    pq.push(barrierMotion, _pos)
 }
 
-function clear() {
+function clear(_pos = 0) {
     for (let i = 0; i < dta.length; i++) {
         barrier[i] = false;
         emphasized[i] = false;
     }
-    __show();
+    __show(_pos);
 }
 
-function removeBlock(idx) {
-    _remove(idx)
+function removeBlock(idx, _pos = 0) {
+    _remove(idx, _pos)
 }
 
-function addBlock(idx, num) {
-    _add(idx, num)
+function addBlock(idx, num, _pos = 0) {
+    _add(idx, num, _pos)
 }
 
 export {
