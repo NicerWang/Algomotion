@@ -38,6 +38,7 @@ export class PromiseQueue {
     stop(){
         this.stopped = true;
         this.queue.length = 0;
+        this.indexQueue.length = 0;
     }
     pause(status){
         this.paused = status;

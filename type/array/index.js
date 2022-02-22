@@ -37,10 +37,6 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
         if (op[1] === "swap") {
             swapBlock(argus[0], argus[1], i)
             if (isInit) {
-                kf.emphasized = kf.emphasized.concat()
-                for (let i = 0; i < kf.emphasized.length; i++) {
-                    kf.emphasized[i] = false;
-                }
                 kf.dta = kf.dta.concat()
                 const t = kf.dta[argus[0]]
                 kf.dta[argus[0]] = kf.dta[argus[1]]
@@ -51,8 +47,6 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
             emphasizeBlock(argus[0], true, i)
             emphasizeBlock(argus[0], false, i)
             if (isInit) {
-                kf.emphasized = kf.emphasized.concat()
-                kf.emphasized[argus[0]] = true;
                 kfs.push(kf);
             }
         }
