@@ -509,8 +509,9 @@ function destroy() {
     mvs = null
     dta = null
     emphasized = null
-    kfs = null
-    pq = null
+    dta = [];
+    emphasized = [];
+    kfs = [];
 }
 
 function swapNode(idx1, idx2, _pos) {
