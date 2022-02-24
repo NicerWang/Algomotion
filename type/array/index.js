@@ -30,7 +30,7 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
     for (let i = start; i < mvs.length; i++) {
         let op = mvs[i].match(/([a-z]+)\(([\d,]*)\)/)
         let argus = null
-        if(op[2]){
+        if (op[2]) {
             argus = op[2].split(',').map(Number)
         }
         let kf;
@@ -64,7 +64,7 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
                 kfs.push(kf);
             }
         } else if (op[1] === "add") {
-            addBlock(argus[0],argus[1], i)
+            addBlock(argus[0], argus[1], i)
             if (isInit) {
                 kf.dta = kf.dta.concat()
                 kf.emphasized = kf.emphasized.concat()
@@ -82,7 +82,7 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
                 kfs.push(kf);
             }
         } else if (op[1] === "cls") {
-            clear()
+            clear(i)
             if (isInit) {
                 kf.barrier = kf.barrier.concat()
                 kf.emphasized = kf.emphasized.concat()
@@ -93,13 +93,18 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
                 kfs.push(kf);
             }
         }
-
     }
 }
 
-function __show(_pos = 0) {
+function __show(_pos = 0, needClear) {
     let showMotion = () => {
         return new Promise((resolve, reject) => {
+            if (needClear) {
+                for (let i = 0; i < dta.length; i++) {
+                    barrier[i] = false;
+                    emphasized[i] = false;
+                }
+            }
             ctx.globalAlpha = 0;
             let timer = setInterval(function () {
                 if (pq.stopped) {
@@ -218,10 +223,10 @@ function _swap(idx1, idx2, p1x, p1y, p2x, mid, offset, _pos) {
                     for (let i = idx1; i <= idx2; i++) {
                         _drawBlock(i)
                     }
-                    if(idx2 + 1 < dta.length){
+                    if (idx2 + 1 < dta.length) {
                         _drawBlock(idx2 + 1)
                     }
-                    if(barrier[idx1]){
+                    if (barrier[idx1]) {
                         _drawBarrier(gap + (gap + set.blockSize) * idx1)
                     }
                     clearInterval(timer)
@@ -238,10 +243,10 @@ function _swap(idx1, idx2, p1x, p1y, p2x, mid, offset, _pos) {
                 }
                 ctx.fillStyle = 'rgba(255,255,255,0.3)';
                 ctx.fillRect(changedX, changedY, changedWidth, changedHeight);
-                if(idx2 + 1 < dta.length){
+                if (idx2 + 1 < dta.length) {
                     _drawBlock(idx2 + 1)
                 }
-                if(barrier[idx1]){
+                if (barrier[idx1]) {
                     _drawBarrier(gap + (gap + set.blockSize) * idx1)
                 }
                 for (let i = idx1 + 1; i < idx2; i++) {
@@ -542,11 +547,7 @@ function addBarrier(idx, _pos = 0) {
 }
 
 function clear(_pos = 0) {
-    for (let i = 0; i < dta.length; i++) {
-        barrier[i] = false;
-        emphasized[i] = false;
-    }
-    __show(_pos);
+    __show(_pos, true);
 }
 
 function removeBlock(idx, _pos = 0) {
