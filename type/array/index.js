@@ -28,8 +28,11 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
         });
     }
     for (let i = start; i < mvs.length; i++) {
-        let op = mvs[i].match(/([a-z]+)\(([\d,]+)\)/)
-        let argus = op[2].split(',').map(Number)
+        let op = mvs[i].match(/([a-z]+)\(([\d,]*)\)/)
+        let argus = null
+        if(op[2]){
+            argus = op[2].split(',').map(Number)
+        }
         let kf;
         if (isInit) {
             kf = Object.assign({}, kfs[i])
@@ -49,7 +52,48 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
             if (isInit) {
                 kfs.push(kf);
             }
+        } else if (op[1] === "remove") {
+            removeBlock(argus[0], i)
+            if (isInit) {
+                kf.dta = kf.dta.concat()
+                kf.emphasized = kf.emphasized.concat()
+                kf.barrier = kf.barrier.concat()
+                kf.dta.splice(argus[0], 1);
+                kf.emphasized.splice(argus[0], 1);
+                kf.barrier.splice(argus[0], 1);
+                kfs.push(kf);
+            }
+        } else if (op[1] === "add") {
+            addBlock(argus[0],argus[1], i)
+            if (isInit) {
+                kf.dta = kf.dta.concat()
+                kf.emphasized = kf.emphasized.concat()
+                kf.barrier = kf.barrier.concat()
+                kf.dta.splice(argus[0], 0, argus[1]);
+                kf.emphasized.splice(argus[0], 0, false);
+                kf.barrier.splice(argus[0], 0, false);
+                kfs.push(kf);
+            }
+        } else if (op[1] === "bar") {
+            addBarrier(argus[0], i)
+            if (isInit) {
+                kf.barrier = kf.barrier.concat()
+                kf.barrier[argus[0]] = true
+                kfs.push(kf);
+            }
+        } else if (op[1] === "cls") {
+            clear()
+            if (isInit) {
+                kf.barrier = kf.barrier.concat()
+                kf.emphasized = kf.emphasized.concat()
+                for (let i = 0; i < kf.dta.length; i++) {
+                    kf.barrier[i] = false;
+                    kf.emphasized[i] = false;
+                }
+                kfs.push(kf);
+            }
         }
+
     }
 }
 
@@ -145,18 +189,20 @@ function _drawBarrier(pos) {
 /*
     Motion Functions
 */
-function _swap(idx1, idx2, p1x, p1y, p2x, p2y, offset, _pos) {
+function _swap(idx1, idx2, p1x, p1y, p2x, mid, offset, _pos) {
     let swapMotion = () => {
         return new Promise((resolve, reject) => {
+            let p1x = gap + (set.blockSize + gap) * idx1
+            let p2x = gap + (set.blockSize + gap) * idx2
             let changedX = Math.min(p1x, p2x) - ctx.lineWidth;
-            let changedY = Math.min(p1y, p2y) - ctx.lineWidth - offset;
+            let changedY = mid - ctx.lineWidth - offset;
             let changedWidth = ctx.lineWidth * 2 + set.blockSize + Math.max(p2x - p1x, p1x - p2x);
-            let changedHeight = ctx.lineWidth + Math.abs(offset) * 2 + set.blockSize + Math.max(p2y - p1y, p1y - p2y);
+            let changedHeight = ctx.lineWidth + Math.abs(offset) * 2 + set.blockSize;
             let process = 0;
             let x1 = p1x;
-            let y1 = p1y;
+            let y1 = mid;
             let x2 = p2x;
-            let y2 = p2y;
+            let y2 = mid;
             let timer = setInterval(function () {
                 if (pq.stopped) {
                     pq.lock = false
@@ -172,6 +218,12 @@ function _swap(idx1, idx2, p1x, p1y, p2x, p2y, offset, _pos) {
                     for (let i = idx1; i <= idx2; i++) {
                         _drawBlock(i)
                     }
+                    if(idx2 + 1 < dta.length){
+                        _drawBlock(idx2 + 1)
+                    }
+                    if(barrier[idx1]){
+                        _drawBarrier(gap + (gap + set.blockSize) * idx1)
+                    }
                     clearInterval(timer)
                     setTimeout(() => {
                         for (let i = 0; i < emphasized.length; i++) {
@@ -186,11 +238,17 @@ function _swap(idx1, idx2, p1x, p1y, p2x, p2y, offset, _pos) {
                 }
                 ctx.fillStyle = 'rgba(255,255,255,0.3)';
                 ctx.fillRect(changedX, changedY, changedWidth, changedHeight);
+                if(idx2 + 1 < dta.length){
+                    _drawBlock(idx2 + 1)
+                }
+                if(barrier[idx1]){
+                    _drawBarrier(gap + (gap + set.blockSize) * idx1)
+                }
                 for (let i = idx1 + 1; i < idx2; i++) {
                     _drawBlock(i)
                 }
-                [x1, y1] = threeBezier(process / 100, [p1x, p1y], [p1x, p1y + offset], [p2x, p2y + offset], [p2x, p2y]);
-                [x2, y2] = threeBezier(process / 100, [p2x, p2y], [p2x, p2y - offset], [p1x, p1y - offset], [p1x, p1y]);
+                [x1, y1] = threeBezier(process / 100, [p1x, mid], [p1x, mid + offset], [p2x, mid + offset], [p2x, mid]);
+                [x2, y2] = threeBezier(process / 100, [p2x, mid], [p2x, mid - offset], [p1x, mid - offset], [p1x, mid]);
                 _emphasizeRect(dta[idx1], x1, y1, set.blockSize, set.blockSize, set.blockRadius)
                 _emphasizeRect(dta[idx2], x2, y2, set.blockSize, set.blockSize, set.blockRadius)
                 process += nonlinear(process, set.speed)
@@ -273,6 +331,8 @@ function _add(idx, num, _pos) {
         return new Promise((resolve, reject) => {
             let newGap = __updateGap(dta.length + 1);
             let process = 0;
+            barrier.splice(idx, 0, false);
+            emphasized.splice(idx, 0, false);
             let timer = setInterval(function () {
                 if (pq.stopped) {
                     pq.lock = false
@@ -284,8 +344,6 @@ function _add(idx, num, _pos) {
                     ctx.clearRect(0, 0, set.width, set.height);
                     gap = newGap;
                     dta.splice(idx, 0, num);
-                    barrier.splice(idx, 0, false);
-                    emphasized.splice(idx, 0, false);
                     for (let i = 0; i < dta.length; i++) {
                         if (i === idx) continue
                         _drawBlock(i)

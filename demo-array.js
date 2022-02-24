@@ -32,7 +32,7 @@ window.onload = () => {
     }
     let info = {
         'dta': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-        'mvs': ['get(0)', 'get(1)', 'swap(0,1)', 'get(2)', 'get(3)', 'swap(2,3)', 'get(4)', 'get(5)', 'swap(4,5)']
+        'mvs': ['get(0)', 'bar(1)', 'get(1)', 'swap(0,1)', 'add(2,88)', 'remove(3)', 'swap(2,3)', 'cls()', 'get(5)', 'swap(4,5)']
     }
     let element = document.querySelector("#selector")
     document.querySelector("#positions").innerHTML = info.mvs.join(",")

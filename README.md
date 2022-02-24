@@ -61,14 +61,14 @@ npm i algomotion
 
 #### 方法
 
-| 名称                    | 作用                                                      |
-| ----------------------- | --------------------------------------------------------- |
-| `init(set,info,canvas)` | 初始化函数                                                |
-| `destory()`             | 析构函数                                                  |
-| `pause(boolean)`        | 控制暂停继续动画                                          |
-| `setMovesReader(func)`  | 设定`mvs`处理器，处理器为一个函数，默认提供了一个可供参考 |
-| `setPosition(idx)`      | 控制关键帧的位置                                          |
-| `clear()`               | 清除所有的强调状态和标记                                  |
+| 名称                    | 作用                                                         |
+| ----------------------- | ------------------------------------------------------------ |
+| `init(set,info,canvas)` | 初始化函数                                                   |
+| `destory()`             | 析构函数                                                     |
+| `pause(boolean)`        | 控制暂停继续动画                                             |
+| `setMovesReader(func)`  | 设定`mvs`处理器，处理器为一个函数，默认详见：[默认MovesReader](#关于默认的MovesReader)。 |
+| `setPosition(idx)`      | 控制关键帧的位置                                             |
+| `clear()`               | 清除所有的强调状态和标记                                     |
 
 ### Array
 
@@ -163,4 +163,25 @@ npm i algomotion
   | `emphasizeLink(idx1, idx2, edges, newWidth = 10, newColor = '#1c474d') ` | 突出显示边，返回新`edges`                                    |
   | `emphasizeNode(idx, data, newSize = 60, newColor = '#1c474d') ` | 突出显示结点，返回新`data`                                   |
 
-  
+
+## 关于默认的MovesReader
+
+* `Array`
+
+  支持的`mvs`格式(6种)：`get(index)`,`swap(index1,index2)`,`add(idx,number)`,`remove(index)`,`bar(index)`,`cls()`
+
+  其中：
+
+  * `get(index)`为高亮一次第`index`个元素
+  * `bar(index)`为在第`index`个元素前添加标记，即[`Demo`](#Demo)中的`AddBarrier`
+
+  * `cls()`为清除所有`barrier`标记
+
+* `Tree`
+
+  支持的`mvs`格式(4种)：`get(index)`,`swap(index1,index2)`,`insert(idx,number)`,`remove(index)`
+
+  其中：
+
+  * `index`为结点在完全二叉树中的位置
+
