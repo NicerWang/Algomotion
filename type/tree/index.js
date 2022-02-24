@@ -184,10 +184,12 @@ function __updateParam() {
         let scale = (set.height / newLayer) / set.layerHeight
         newLayerHeight = set.layerHeight * scale
         newBlockSize = set.blockSize * scale
-        if (set.layerHeight > set.maxLayerHeight) {
-            newLayerHeight = set.maxLayerHeight
-            newBlockSize = set.maxBlockSize
-        }
+    }
+    if (newLayerHeight > set.maxLayerHeight) {
+        newLayerHeight = set.maxLayerHeight
+    }
+    if (newBlockSize > set.blockMaxSize) {
+        newBlockSize = set.blockMaxSize
     }
     set.layerHeight = newLayerHeight
     set.blockSize = newBlockSize
@@ -437,8 +439,8 @@ function init(setting, information, element) {
     set = {
         height: setting.height ? setting.height * dpr : 250 * dpr,
         width: setting.width ? setting.width * dpr : 800 * dpr,
-        blockMaxSize: setting.blockSize ? setting.blockSize * dpr : 50 * dpr,
-        maxLayerHeight: setting.layerHeight ? setting.layerHeight * dpr : 70 * dpr,
+        blockMaxSize: setting.blockSize ? setting.blockSize * dpr : 80 * dpr,
+        maxLayerHeight: setting.layerHeight ? setting.layerHeight * dpr : 140 * dpr,
         emphasisColor: setting.emphasisColor ? setting.emphasisColor : '#bedce3',
         emphasisTextColor: setting.emphasisTextColor ? setting.emphasisTextColor : '#1c474d',
         textColor: setting.textColor ? setting.textColor : '#eefcf5',
@@ -485,16 +487,16 @@ function setMovesReader(movesReader) {
 function setPosition(pos) {
     pq.stop()
     ctx.globalAlpha = 1
+    emphasized = kfs[pos].emphasized.concat();
+    dta = kfs[pos].dta.concat();
+    __updateParam()
+    ctx.clearRect(0, 0, set.width, set.height)
+    for (let i = dta.length - 1; i >= 0; i--) {
+        _drawBlock(i)
+    }
     setTimeout(() => {
-        emphasized = kfs[pos].emphasized.concat();
-        dta = kfs[pos].dta.concat();
-        __updateParam()
-        ctx.clearRect(0, 0, set.width, set.height)
-        for (let i = dta.length - 1; i >= 0; i--) {
-            _drawBlock(i)
-        }
         mr(mvs, pos)
-    }, 100)
+    }, 300)
 }
 
 function pause(status) {
@@ -538,7 +540,6 @@ function emphasizeNode(idx, status, _pos = 0) {
                     resolve()
                 }
             }, 30)
-
         })
     }
     pq.push(emphasizeMotion, _pos)

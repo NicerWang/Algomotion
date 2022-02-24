@@ -404,18 +404,17 @@ function setMovesReader(movesReader) {
 function setPosition(pos) {
     pq.stop()
     ctx.globalAlpha = 1
+    barrier = kfs[pos].barrier.concat();
+    emphasized = kfs[pos].emphasized.concat();
+    dta = kfs[pos].dta.concat();
+    gap = __updateGap(dta.length)
+    ctx.clearRect(0, 0, set.width, set.height)
+    for (let i = 0; i < dta.length; i++) {
+        _drawBlock(i)
+    }
     setTimeout(() => {
-        barrier = kfs[pos].barrier.concat();
-        emphasized = kfs[pos].emphasized.concat();
-        dta = kfs[pos].dta.concat();
-        gap = __updateGap(dta.length)
-        ctx.clearRect(0, 0, set.width, set.height)
-        for (let i = 0; i < dta.length; i++) {
-            _drawBlock(i)
-        }
         mr(mvs, pos)
-    }, 100)
-
+    }, 300)
 }
 
 function pause(status) {
