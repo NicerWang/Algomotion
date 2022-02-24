@@ -22,21 +22,23 @@ npm i algomotion
 
 * Set
 
-  | 名称                | 含义（涉及数字，单位均为px）               | 默认值    |
-  | ------------------- | ------------------------------------------ | --------- |
-  | `height`            | `Canvas`高度                               | 250       |
-  | `width`             | `Canvas`宽度                               | 800       |
-  | `blockMaxSize`      | 数字块最大边长(圆形直径)                   | 50        |
-  | `emphasisColor`     | 强调块背景色                               | #bedce3   |
-  | `emphasisTextColor` | 强调块字体颜色                             | #1c474d   |
-  | `textColor`         | 普通块字体颜色                             | #eefcf5   |
-  | `fillColor`         | 普通块背景色                               | #14cdc8   |
-  | `font`              | 数字大小                                   | 20        |
-  | `hidpi`             | HiDPI支持                                  | true      |
-  | `fps`               | 动画帧率                                   | 60        |
-  | `speed`             | 动画执行速度                               | 1.0       |
-  | `motion`            | 是否使用`movesReader`读取`mvs`中的操作步骤 | false     |
-  | `postion`           | 启用`motion`时，绑定`mvs`执行的进度        | undefined |
+  | 名称                | 含义（涉及数字，单位均为px）                   | 默认值    |
+  | ------------------- | ---------------------------------------------- | --------- |
+  | `height`            | `Canvas`高度                                   | 250       |
+  | `width`             | `Canvas`宽度                                   | 800       |
+  | `blockMaxSize`      | 数字块最大边长(圆形直径)                       | 50        |
+  | `emphasisColor`     | 强调块背景色                                   | #bedce3   |
+  | `emphasisTextColor` | 强调块字体颜色                                 | #1c474d   |
+  | `textColor`         | 普通块字体颜色                                 | #eefcf5   |
+  | `fillColor`         | 普通块背景色                                   | #14cdc8   |
+  | `barrierColor`      | `Barrier`的颜色                                | red       |
+  | `font`              | 数字大小                                       | 20        |
+  | `hidpi`             | HiDPI支持                                      | true      |
+  | `fps`               | 动画帧率                                       | 60        |
+  | `speed`             | 动画执行速度                                   | 1.0       |
+  | `motion`            | 是否使用`movesReader`读取`mvs`中的操作步骤     | false     |
+  | `postion`           | 启用`motion`时，绑定`mvs`执行的进度            | undefined |
+  | `staticTime`        | 定义一些静止动作的持续时间(如强调、空白动作等) | 800       |
 
 > `position`使用方法：
 >
@@ -168,20 +170,26 @@ npm i algomotion
 
 * `Array`
 
-  支持的`mvs`格式(6种)：`get(index)`,`swap(index1,index2)`,`add(idx,number)`,`remove(index)`,`bar(index)`,`cls()`
+  支持的`mvs`格式(7种)：
+
+  `get(index)`,`swap(index1,index2)`,`add(idx,number)`,`remove(index)`,`barrier(index)`,`clear()`,`blank()`
 
   其中：
 
   * `get(index)`为高亮一次第`index`个元素
-  * `bar(index)`为在第`index`个元素前添加标记，即[`Demo`](#Demo)中的`AddBarrier`
+  * `barrier(index)`为在第`index`个元素前添加标记，即[`Demo`](#Demo)中的`AddBarrier`
 
-  * `cls()`为清除所有`barrier`标记
+  * `clear()`为清除所有`barrier`标记
+  * `blank()`为什么都不做，等待一次，用于配合其他动作
 
 * `Tree`
 
-  支持的`mvs`格式(4种)：`get(index)`,`swap(index1,index2)`,`insert(idx,number)`,`remove(index)`
+  支持的`mvs`格式(5种)：
+
+  `get(index)`,`swap(index1,index2)`,`insert(idx,number)`,`remove(index)`,`blank()`
 
   其中：
 
   * `index`为结点在完全二叉树中的位置
+  * `blank()`为什么都不做，等待一次，用于配合其他动作
 

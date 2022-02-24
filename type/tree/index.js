@@ -93,13 +93,23 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
                 kf.dta[argus[0]] = undefined;
                 kfs.push(kf);
             }
+        } else {
+            addBlank(i)
+            if (isInit) {
+                kfs.push(kf);
+            }
         }
     }
 }
 
-function __show(_pos = 0) {
+function __show(_pos = 0, needClear = false) {
     let showNodeMotion = () => {
         return new Promise((resolve, reject) => {
+            if(needClear){
+                for (let i = dta.length - 1; i >= 0; i--) {
+                    emphasized[i] = false;
+                }
+            }
             ctx.globalAlpha = 0;
             let timer = setInterval(function () {
                 if (pq.stopped) {
@@ -120,7 +130,6 @@ function __show(_pos = 0) {
                         _drawBlock(i, false, false);
                     }
                     resolve()
-
                 }
             }, set.fps)
         })
@@ -153,7 +162,6 @@ function __show(_pos = 0) {
                         _drawBlock(i);
                     }
                     resolve()
-
                 }
             }, set.fps)
         })
@@ -279,7 +287,7 @@ function _swap(idx1, idx2, _pos = 0) {
                             _drawBlock(i)
                         }
                         resolve()
-                    }, 200)
+                    }, set.staticTime * 5)
                     return
                 }
                 ctx.fillStyle = 'rgba(255,255,255,0.3)';
@@ -447,7 +455,8 @@ function init(setting, information, element) {
         fillColor: setting.fillColor ? setting.fillColor : '#14cdc8',
         font: setting.font ? setting.font * dpr : 20 * dpr,
         fps: setting.fps ? 1000 / setting.fps : 1000 / 60,
-        speed: setting.speed ? setting.speed : 1.0
+        speed: setting.speed ? setting.speed : 1.0,
+        staticTime: setting.staticTime ? setting.staticTime / 10 : 80
     };
     set.layerHeight = set.maxLayerHeight
     set.blockSize = set.blockMaxSize
@@ -496,7 +505,7 @@ function setPosition(pos) {
     }
     setTimeout(() => {
         mr(mvs, pos)
-    }, 300)
+    }, set.staticTime * 5)
 }
 
 function pause(status) {
@@ -539,17 +548,35 @@ function emphasizeNode(idx, status, _pos = 0) {
                 if (process > 100) {
                     resolve()
                 }
-            }, 30)
+            }, set.staticTime)
         })
     }
     pq.push(emphasizeMotion, _pos)
 }
 
-function clear() {
-    for (let i = dta.length - 1; i >= 0; i--) {
-        emphasized[i] = false;
+function clear(_idx = 0) {
+    __show(_idx,true);
+}
+
+function addBlank(_pos = 0) {
+    let blackMotion = () => {
+        return new Promise((resolve, reject) => {
+            let process = 0
+            let timer = setInterval(function () {
+                if (pq.stopped) {
+                    pq.lock = false
+                    clearInterval(timer)
+                    return
+                }
+                if (pq.paused) return;
+                process += 10
+                if (process >= 100) {
+                    resolve()
+                }
+            }, set.staticTime)
+        })
     }
-    __show();
+    pq.push(blackMotion, _pos)
 }
 
 function removeNode(idx, _pos) {

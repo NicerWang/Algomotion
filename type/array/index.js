@@ -74,14 +74,14 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
                 kf.barrier.splice(argus[0], 0, false);
                 kfs.push(kf);
             }
-        } else if (op[1] === "bar") {
+        } else if (op[1] === "barrier") {
             addBarrier(argus[0], i)
             if (isInit) {
                 kf.barrier = kf.barrier.concat()
                 kf.barrier[argus[0]] = true
                 kfs.push(kf);
             }
-        } else if (op[1] === "cls") {
+        } else if (op[1] === "clear") {
             clear(i)
             if (isInit) {
                 kf.barrier = kf.barrier.concat()
@@ -92,11 +92,16 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
                 }
                 kfs.push(kf);
             }
+        } else {
+            addBlank(i)
+            if (isInit) {
+                kfs.push(kf);
+            }
         }
     }
 }
 
-function __show(_pos = 0, needClear) {
+function __show(_pos = 0, needClear = false) {
     let showMotion = () => {
         return new Promise((resolve, reject) => {
             if (needClear) {
@@ -180,14 +185,10 @@ function _drawBlock(idx, isEmphasized = false, needClear = false) {
 function _drawBarrier(pos) {
     ctx.fillStyle = set.barrierColor
     ctx.beginPath();
-    ctx.moveTo(pos + set.blockSize / 10, mid - set.blockSize / 4);
-    ctx.lineTo(pos - gap - set.blockSize / 10, mid - set.blockSize / 4);
-    ctx.lineTo(pos - gap / 2 - ctx.lineWidth * 2, mid);
-    ctx.lineTo(pos - gap / 2 - ctx.lineWidth * 2, mid + ctx.lineWidth * 2 + set.blockSize);
-    ctx.lineTo(pos - gap - set.blockSize / 10, mid + ctx.lineWidth * 2 + set.blockSize + set.blockSize / 4);
-    ctx.lineTo(pos + set.blockSize / 10, mid + ctx.lineWidth * 2 + set.blockSize + set.blockSize / 4);
-    ctx.lineTo(pos - gap / 2 + ctx.lineWidth * 2, mid + ctx.lineWidth * 2 + set.blockSize);
-    ctx.lineTo(pos - gap / 2 + ctx.lineWidth * 2, mid);
+    ctx.moveTo(pos - gap / 2 - ctx.lineWidth * 2, mid - set.blockSize / 4);
+    ctx.lineTo(pos - gap / 2 - ctx.lineWidth * 2, mid + set.blockSize / 4 + set.blockSize);
+    ctx.lineTo(pos - gap / 2 + ctx.lineWidth * 2, mid + set.blockSize / 4 + set.blockSize);
+    ctx.lineTo(pos - gap / 2 + ctx.lineWidth * 2, mid - set.blockSize / 4);
     ctx.fill();
 }
 
@@ -215,6 +216,22 @@ function _swap(idx1, idx2, p1x, p1y, p2x, mid, offset, _pos) {
                     return
                 }
                 if (pq.paused) return;
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fillRect(changedX, changedY, changedWidth, changedHeight);
+                if (idx2 + 1 < dta.length) {
+                    _drawBlock(idx2 + 1)
+                }
+                if (barrier[idx1]) {
+                    _drawBarrier(gap + (gap + set.blockSize) * idx1)
+                }
+                for (let i = idx1 + 1; i < idx2; i++) {
+                    _drawBlock(i)
+                }
+                [x1, y1] = threeBezier(process / 100, [p1x, mid], [p1x, mid + offset], [p2x, mid + offset], [p2x, mid]);
+                [x2, y2] = threeBezier(process / 100, [p2x, mid], [p2x, mid - offset], [p1x, mid - offset], [p1x, mid]);
+                _emphasizeRect(dta[idx1], x1, y1, set.blockSize, set.blockSize, set.blockRadius)
+                _emphasizeRect(dta[idx2], x2, y2, set.blockSize, set.blockSize, set.blockRadius)
+                process += nonlinear(process, set.speed)
                 if (process > 100) {
                     let t = dta[idx1];
                     dta[idx1] = dta[idx2];
@@ -237,26 +254,10 @@ function _swap(idx1, idx2, p1x, p1y, p2x, mid, offset, _pos) {
                         for (let i = idx1; i <= idx2; i++) {
                             _drawBlock(i)
                         }
+                        console.log(123)
                         resolve()
-                    }, 200)
-                    return
+                    }, set.staticTime * 5)
                 }
-                ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                ctx.fillRect(changedX, changedY, changedWidth, changedHeight);
-                if (idx2 + 1 < dta.length) {
-                    _drawBlock(idx2 + 1)
-                }
-                if (barrier[idx1]) {
-                    _drawBarrier(gap + (gap + set.blockSize) * idx1)
-                }
-                for (let i = idx1 + 1; i < idx2; i++) {
-                    _drawBlock(i)
-                }
-                [x1, y1] = threeBezier(process / 100, [p1x, mid], [p1x, mid + offset], [p2x, mid + offset], [p2x, mid]);
-                [x2, y2] = threeBezier(process / 100, [p2x, mid], [p2x, mid - offset], [p1x, mid - offset], [p1x, mid]);
-                _emphasizeRect(dta[idx1], x1, y1, set.blockSize, set.blockSize, set.blockRadius)
-                _emphasizeRect(dta[idx2], x2, y2, set.blockSize, set.blockSize, set.blockRadius)
-                process += nonlinear(process, set.speed)
             }, set.fps);
         })
     }
@@ -427,7 +428,8 @@ function init(setting, information, element) {
         motionOffset: setting.motionOffset ? setting.motionOffset * dpr : 50 * dpr,
         font: setting.font ? setting.font * dpr : 20 * dpr,
         fps: setting.fps ? 1000 / setting.fps : 1000 / 60,
-        speed: setting.speed ? setting.speed : 1.0
+        speed: setting.speed ? setting.speed : 1.0,
+        staticTime: setting.staticTime ? setting.staticTime / 10 : 80
     };
     let info = {
         dta: information.dta ? information.dta : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -477,7 +479,7 @@ function setPosition(pos) {
     }
     setTimeout(() => {
         mr(mvs, pos)
-    }, 300)
+    }, set.staticTime * 5)
 }
 
 function pause(status) {
@@ -523,10 +525,10 @@ function emphasizeBlock(idx, status, _pos = 0) {
                 }
                 if (pq.paused) return;
                 process += 10
-                if (process > 100) {
+                if (process >= 100) {
                     resolve()
                 }
-            }, 30)
+            }, set.staticTime)
         })
     }
     pq.push(emphasizeMotion, _pos)
@@ -537,13 +539,43 @@ function addBarrier(idx, _pos = 0) {
         return new Promise((resolve, reject) => {
             barrier[idx] = true;
             _drawBlock(idx)
-            setTimeout(() => {
-                resolve()
-            }, 200)
-
+            let process = 0
+            let timer = setInterval(function () {
+                if (pq.stopped) {
+                    pq.lock = false
+                    clearInterval(timer)
+                    return
+                }
+                if (pq.paused) return;
+                process += 10
+                if (process >= 100) {
+                    resolve()
+                }
+            }, set.staticTime)
         })
     }
     pq.push(barrierMotion, _pos)
+}
+
+function addBlank(_pos = 0) {
+    let blackMotion = () => {
+        return new Promise((resolve, reject) => {
+            let process = 0
+            let timer = setInterval(function () {
+                if (pq.stopped) {
+                    pq.lock = false
+                    clearInterval(timer)
+                    return
+                }
+                if (pq.paused) return;
+                process += 10
+                if (process >= 100) {
+                    resolve()
+                }
+            }, set.staticTime)
+        })
+    }
+    pq.push(blackMotion, _pos)
 }
 
 function clear(_pos = 0) {
