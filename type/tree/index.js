@@ -53,8 +53,11 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
         });
     }
     for (let i = start; i < mvs.length; i++) {
-        let op = mvs[i].match(/([a-z]+)\(([\d,]+)\)/)
-        let argus = op[2].split(',').map(Number)
+        let op = mvs[i].match(/([a-z]+)\(([\d,]*)\)/)
+        let argus = null
+        if (op[2]) {
+            argus = op[2].split(',').map(Number)
+        }
         let kf;
         if (isInit) {
             kf = Object.assign({}, kfs[i])
