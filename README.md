@@ -12,7 +12,7 @@ npm i algomotion
 
 * Array(数组) [Here](https://nicerwang.github.io/Algomotion/demo-array.html)
 * Tree(树结构) [Here](https://nicerwang.github.io/Algomotion/demo-tree.html)
-* Graph(图)(可选) 基于`Echarts`,暂无Demo.
+* Graph(图) [Here](https://nicerwang.github.io/Algomotion/demo-graph.html)
 
 ## API
 
@@ -26,7 +26,7 @@ npm i algomotion
   | ------------------- | ---------------------------------------------- | --------- |
   | `height`            | `Canvas`高度                                   | 250       |
   | `width`             | `Canvas`宽度                                   | 800       |
-  | `blockMaxSize`      | 数字块最大边长(圆形直径)                       | 50        |
+  | `blockMaxSize`      | 数字块(最大)边长(圆形直径)                     | 50        |
   | `emphasisColor`     | 强调块背景色                                   | #bedce3   |
   | `emphasisTextColor` | 强调块字体颜色                                 | #1c474d   |
   | `textColor`         | 普通块字体颜色                                 | #eefcf5   |
@@ -120,50 +120,23 @@ npm i algomotion
 | `addNode(idx,num)`           | 添加一个新结点                                |
 | `removeNode(idx)`            | 删除一个结点                                  |
 
-### Graph(Optional)
+### Graph
 
-碍于时间和技术所限，为达到较好效果，基于`Echarts`实现，仅需要使用图时才需引入`Echarts`依赖，使用数组和树时无需引入。
+基于较为原始的力引导布局的**无向图**。
 
-* 推荐`Option`
+#### 配置项
 
-  ```javascript
-  option = {
-    series: [
-      {
-      type: 'graph',
-      layout: 'force',
-      animation: false,
-      silent: true,
-      color: '#14cdc8',
-      label: {
-      show: true,
-      color: '#eefcf5',
-      fontSize: 20
-      },
-      lineStyle: {
-      color: '#14cdc8',
-      width: 5,
-      opacity: 1
-      },
-      force: {
-      repulsion: 200,
-      edgeLength: 100
-      },
-      symbolSize: 40,
-      data: data,
-      edges: edges
-      }
-    ]
-  };
-  ```
+* Set
 
-* 提供的辅助函数
+  | 名称        | 含义（涉及数字，单位均为px）         | 默认值 |
+  | ----------- | ------------------------------------ | ------ |
+  | `blockSize` | 每个结点的大小(替代原`blockMaxSize`) | 40     |
 
-  | 名称                                                         | 作用                                                         |
-  | ------------------------------------------------------------ | ------------------------------------------------------------ |
-  | `matrixReader(labels,matrix)`                                | 提供每个结点的标签和邻接矩阵，返回`Option`中的`data`和`edges` |
-  | `emphasizeLink(idx1, idx2, edges, newWidth = 10, newColor = '#1c474d') ` | 突出显示边，返回新`edges`                                    |
-  | `emphasizeNode(idx, data, newSize = 60, newColor = '#1c474d') ` | 突出显示结点，返回新`data`                                   |
+* Info
+
+  | 名称  | 含义               |
+  | ----- | ------------------ |
+  | `rel` | 放置关系矩阵(二维) |
 
 
 ## 关于默认的MovesReader

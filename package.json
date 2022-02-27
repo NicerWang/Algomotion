@@ -1,6 +1,6 @@
 {
   "name": "algomotion",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "A simple canvas painting util for algorithm visualization",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
