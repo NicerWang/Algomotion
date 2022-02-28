@@ -165,7 +165,7 @@ npm i algomotion
 
   支持的`mvs`格式(5种)：
 
-  `get(index)`,`swap(index1,index2)`,`insert(idx,number)`,`remove(index)`,`blank()`
+  `get(index)`,`swap(index1,index2)`,`insert(index,number)`,`remove(index)`,`blank()`
 
   其中：
 
@@ -174,9 +174,9 @@ npm i algomotion
 
 * `Graph`
 
-  支持的`mvs`格式(5种)：
+  支持的`mvs`格式(6种)：
 
-  `emp(index)`,`unemp(index)`,`link(idx1,idx2)`,`unlink(idx1,idx2)`,`clear()`,`blank()`
+  `emp(index)`,`unemp(index)`,`link(index1,index2)`,`unlink(index1,index2)`,`clear()`,`blank()`
 
   其中：
 
