@@ -54,7 +54,6 @@ export function force(data, edges, width, height, blockSize) {
     for(let i = 0; i < count; i++){
         iterate()
     }
-    console.log("EDGES",edges)
     return finalPosition
 }
 

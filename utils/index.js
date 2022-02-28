@@ -45,8 +45,16 @@ export class PromiseQueue {
     pause(status){
         this.paused = status;
     }
+    statusCheck(timer){
+        if (this.stopped) {
+            this.lock = false
+            clearInterval(timer)
+            return true
+        }
+        if (this.paused) return true
+    }
 }
-export function __drawRect(x, y, w, h, r, ctx) {
+function __drawRect(x, y, w, h, r, ctx) {
     let path = new Path2D();
     path.moveTo(x + r, y);
     path.lineTo(x + w - r, y);
@@ -60,11 +68,59 @@ export function __drawRect(x, y, w, h, r, ctx) {
     ctx.fill(path);
 }
 
-export function __fillNumber(num, font, x, y, w, h, ctx) {
+function __fillNumber(num, font, x, y, w, h, ctx) {
     let startX = x + w / 2;
     let startY = y + h / 2;
     ctx.font = font + "px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(String(num), startX, startY);
+}
+
+export function _line(fromX, fromY, toX, toY, isEmphasized, ctx, set) {
+    let temp = ctx.lineWidth;
+    ctx.lineWidth = 10
+    ctx.strokeStyle = set.fillColor;
+    if (isEmphasized) {
+        ctx.lineWidth = 15
+        ctx.strokeStyle = set.emphasisTextColor
+    }
+    ctx.beginPath();
+    ctx.moveTo(fromX + set.blockSize / 2, fromY + set.blockSize / 2);
+    ctx.lineTo(toX + set.blockSize / 2, toY + set.blockSize / 2);
+    ctx.stroke();
+    ctx.lineWidth = temp;
+}
+
+export function _rect(num, x, y, w, h, r, isEmphasized, ctx, set) {
+    if(isEmphasized){
+        ctx.fillStyle = set.emphasisColor
+    }
+    else{
+        ctx.fillStyle = set.fillColor;
+    }
+    __drawRect(x, y, w, h, r, ctx);
+    if(isEmphasized){
+        ctx.fillStyle = set.emphasisTextColor
+    }
+    else{
+        ctx.fillStyle = set.textColor;
+    }
+    __fillNumber(num, set.font, x, y, w, h, ctx);
+}
+
+export function _blank(pq, resolve, staticTime) {
+    let process = 0
+    let timer = setInterval(function () {
+        if (pq.stopped) {
+            pq.lock = false
+            clearInterval(timer)
+            return
+        }
+        if (pq.paused) return;
+        process += 10
+        if (process >= 100) {
+            resolve()
+        }
+    }, staticTime)
 }

@@ -1,56 +1,63 @@
-import {nonlinear} from "../../motion/index.js";
-import {__drawRect, __fillNumber, PromiseQueue} from "../../utils/index.js";
+import {nonlinear} from "../../motion/index.js" 
+import {_line, _rect, _blank, PromiseQueue} from "../../utils/index.js" 
 
-let set;
-let ctx;
-let pq;
-let motion = false;
-let mr = null;
-let mvs;
-let dta = [];
-let emphasized = [];
-let kfs = [];
+let set 
+let ctx 
+let pq 
+let motion = false 
+let mr = null 
+let mvs = [] 
+let dta = [] 
+let emphasized = [] 
+let kfs = [] 
 
 /*
-    Assist Functions
+    辅助函数
 */
+/**
+ * @desc 计算某个index对应结点的层数
+ */
 function __getLayer(idx) {
-    let diff = 1
+    let layerNodeCnt = 1
     let layer = 0
-    let offset = idx
     while (true) {
-        if (diff <= offset) {
-            offset -= diff
-            diff *= 2
+        if (layerNodeCnt <= idx) {
+            idx -= layerNodeCnt
+            layerNodeCnt *= 2
             layer++
         } else break
     }
     return layer + 1
 }
 
+/**
+ * @desc 计算某个index对应结点的具体位置
+ */
 function __positionCalculator(idx, newLayerHeight, newBlockSize) {
-    let diff = 1
+    let layerNodeCnt = 1
     let layer = 0
-    let offset = idx
     while (true) {
-        if (diff <= offset) {
-            offset -= diff
-            diff *= 2
+        if (layerNodeCnt <= idx) {
+            idx -= layerNodeCnt
+            layerNodeCnt *= 2
             layer++
         } else break
     }
-    let gap = (set.width - diff * newBlockSize) / (diff * 2)
-    let x = gap + (gap * 2 + newBlockSize) * offset;
+    let gap = (set.width - layerNodeCnt * newBlockSize) / (layerNodeCnt * 2)
+    let x = gap + (gap * 2 + newBlockSize) * idx 
     let y = newLayerHeight * layer + set.offset
     return [x, y]
 }
 
+/**
+ * @desc 默认字符串数组读取器
+ */
 function __defaultMovesReader(mvs, start = 0, isInit = false) {
     if (isInit) {
         kfs.push({
             dta: dta.concat(),
             emphasized: emphasized.concat(),
-        });
+        }) 
     }
     for (let i = start; i < mvs.length; i++) {
         let op = mvs[i].match(/([a-z]+)\(([\d,]*)\)/)
@@ -58,79 +65,72 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
         if (op[2]) {
             argus = op[2].split(',').map(Number)
         }
-        let kf;
+        let kf 
         if (isInit) {
             kf = Object.assign({}, kfs[i])
         }
         if (op[1] === "swap") {
             swapNode(argus[0], argus[1], i)
             if (isInit) {
-                kf.emphasized = kf.emphasized.concat()
-                for (let i = 0; i < kf.emphasized.length; i++) {
-                    kf.emphasized[i] = false;
-                }
                 kf.dta = kf.dta.concat()
                 const t = kf.dta[argus[0]]
                 kf.dta[argus[0]] = kf.dta[argus[1]]
-                kf.dta[argus[1]] = t;
-                kfs.push(kf);
+                kf.dta[argus[1]] = t 
+                kfs.push(kf) 
             }
         } else if (op[1] === "get") {
             emphasizeNode(argus[0], true, i)
+            emphasizeNode(argus[0], false, i)
             if (isInit) {
-                kf.emphasized = kf.emphasized.concat()
-                kf.emphasized[argus[0]] = true;
-                kfs.push(kf);
+                kfs.push(kf) 
             }
         } else if (op[1] === "insert") {
             addNode(argus[0], argus[1], i)
             if (isInit) {
                 kf.dta = kf.dta.concat()
-                kf.dta[argus[0]] = argus[1];
-                kfs.push(kf);
+                kf.dta[argus[0]] = argus[1] 
+                kfs.push(kf) 
             }
         } else if (op[1] === "remove") {
             removeNode(argus[0], i)
             if (isInit) {
                 kf.dta = kf.dta.concat()
-                kf.dta[argus[0]] = undefined;
-                kfs.push(kf);
+                kf.dta[argus[0]] = undefined 
+                kfs.push(kf) 
             }
         } else {
             addBlank(i)
             if (isInit) {
-                kfs.push(kf);
+                kfs.push(kf) 
             }
         }
     }
 }
 
-function __show(_pos = 0, needClear = false) {
+/**
+ * @desc 动画：从空白开始展示
+ */
+function _show(_pos = 0, needClear = false) {
     let showNodeMotion = () => {
         return new Promise((resolve, reject) => {
             if(needClear){
                 for (let i = dta.length - 1; i >= 0; i--) {
-                    emphasized[i] = false;
+                    emphasized[i] = false 
                 }
             }
-            ctx.globalAlpha = 0;
+            ctx.globalAlpha = 0 
             let timer = setInterval(function () {
-                if (pq.stopped) {
-                    pq.lock = false
-                    clearInterval(timer)
-                    return
-                }
-                if (pq.paused) return;
+                if(pq.statusCheck(timer)) return
                 ctx.clearRect(0, 0, set.width, set.height)
                 for (let i = dta.length - 1; i >= 0; i--) {
-                    _drawBlock(i, false, false);
+                    _drawBlock(i) 
                 }
                 ctx.globalAlpha += 0.025
                 if (ctx.globalAlpha > 0.9) {
                     ctx.globalAlpha = 1
                     clearInterval(timer)
                     for (let i = dta.length - 1; i >= 0; i--) {
-                        _drawBlock(i, false, false);
+                        _drawBlock(i) 
                     }
                     resolve()
                 }
@@ -139,22 +139,17 @@ function __show(_pos = 0, needClear = false) {
     }
     let showLineMotion = () => {
         return new Promise((resolve, reject) => {
-            ctx.globalAlpha = 0;
+            ctx.globalAlpha = 0 
             let timer = setInterval(function () {
-                if (pq.stopped) {
-                    pq.lock = false
-                    clearInterval(timer)
-                    return
-                }
-                if (pq.paused) return;
+                if(pq.statusCheck(timer)) return
                 ctx.clearRect(0, 0, set.width, set.height)
                 for (let i = dta.length - 1; i >= 0; i--) {
-                    _drawBlock(i, false, true, false);
+                    _drawLine(i) 
                 }
-                let temp = ctx.globalAlpha;
-                ctx.globalAlpha = 1;
+                let temp = ctx.globalAlpha 
+                ctx.globalAlpha = 1 
                 for (let i = dta.length - 1; i >= 0; i--) {
-                    _drawBlock(i, false, false);
+                    _drawBlock(i) 
                 }
                 ctx.globalAlpha = temp
                 ctx.globalAlpha += 0.025
@@ -162,7 +157,8 @@ function __show(_pos = 0, needClear = false) {
                     ctx.globalAlpha = 1
                     clearInterval(timer)
                     for (let i = dta.length - 1; i >= 0; i--) {
-                        _drawBlock(i);
+                        _drawLine(i)
+                        _drawBlock(i) 
                     }
                     resolve()
                 }
@@ -173,13 +169,16 @@ function __show(_pos = 0, needClear = false) {
     pq.push(showLineMotion, _pos)
 }
 
+/**
+ * @desc 参数更新：每层的高度、结点的大小
+ */
 function __updateParam() {
-    let newLayerHeight = set.layerHeight;
-    let newBlockSize = set.blockSize;
-    let len;
+    let newLayerHeight = set.layerHeight 
+    let newBlockSize = set.blockSize 
+    let len 
     for (let i = dta.length - 1; i >= 0; i--) {
         if (dta[i] !== undefined) {
-            len = i;
+            len = i 
             break
         }
     }
@@ -209,83 +208,53 @@ function __updateParam() {
 }
 
 /*
-    Draw Functions
+    元素绘制函数
 */
-function _line(fromX, fromY, toX, toY, isEmphasized = false) {
-    let temp = ctx.lineWidth;
-    ctx.lineWidth = 10
-    ctx.strokeStyle = set.fillColor;
-    if (isEmphasized) {
-        ctx.lineWidth = 15
-        ctx.strokeStyle = set.emphasisTextColor
-    }
-    ctx.beginPath();
-    ctx.moveTo(fromX + set.blockSize / 2, fromY + set.blockSize / 2);
-    ctx.lineTo(toX + set.blockSize / 2, toY + set.blockSize / 2);
-    ctx.stroke();
-    ctx.lineWidth = temp;
-
-}
-
-function _rect(num, x, y, w, h, r) {
-    ctx.fillStyle = set.fillColor;
-    __drawRect(x, y, w, h, r, ctx);
-    ctx.fillStyle = set.textColor;
-    __fillNumber(num, set.font, x, y, w, h, ctx);
-}
-
-function _emphasizeRect(num, x, y, w, h, r) {
-    ctx.fillStyle = set.emphasisColor;
-    __drawRect(x, y, w, h, r, ctx);
-    ctx.fillStyle = set.emphasisTextColor;
-    __fillNumber(num, set.font + 5, x, y, w, h, ctx);
-}
-
-function _drawBlock(idx, needClear = false, drawLine = true, drawBlock = true) {
-    if (dta[idx] === undefined) return;
-    const [x, y] = __positionCalculator(idx, set.layerHeight, set.blockSize);
+/**
+ * @desc 绘制结点
+ */
+function _drawBlock(idx, needClear = false) {
+    if (dta[idx] === undefined) return 
+    const [x, y] = __positionCalculator(idx, set.layerHeight, set.blockSize) 
     if (needClear) {
-        ctx.clearRect(x - ctx.lineWidth, y - ctx.lineWidth, set.blockSize + 2 * ctx.lineWidth, set.blockSize + 2 * ctx.lineWidth);
+        ctx.clearRect(x - ctx.lineWidth, y - ctx.lineWidth, set.blockSize + 2 * ctx.lineWidth, set.blockSize + 2 * ctx.lineWidth) 
     }
-    if (idx !== 0 && drawLine) {
-        const [x_f, y_f] = __positionCalculator(Math.floor((idx - 1) / 2), set.layerHeight, set.blockSize)
-        _line(x, y, x_f, y_f)
-    }
-    if (!drawBlock) return
-    if (!emphasized[idx]) {
-        _rect(dta[idx], x, y, set.blockSize, set.blockSize, set.blockSize / 2)
-    } else {
-        _emphasizeRect(dta[idx], x, y, set.blockSize, set.blockSize, set.blockSize / 2)
-    }
+    _rect(dta[idx], x, y, set.blockSize, set.blockSize, set.blockSize / 2, emphasized[idx], ctx, set)
+}
+
+/**
+ * @desc 绘制连线
+ */
+function _drawLine(child) {
+    if(child === 0 || dta[child] === undefined) return
+    const [x, y] = __positionCalculator(child, set.layerHeight, set.blockSize) 
+    const [x_f, y_f] = __positionCalculator(Math.floor((child - 1) / 2), set.layerHeight, set.blockSize)
+    _line(x, y, x_f, y_f, false, ctx, set)
 }
 
 /*
-    Motion Functions
+    动画函数
 */
+/**
+ * @desc 交换动画
+ */
 function _swap(idx1, idx2, _pos = 0) {
     let swapMotion = () => {
         return new Promise((resolve, reject) => {
-            let process = 0;
+            let process = 0 
             let timer = setInterval(function () {
-                if (pq.stopped) {
-                    pq.lock = false
-                    clearInterval(timer)
-                    return
-                }
-                if (pq.paused) return;
+                if(pq.statusCheck(timer)) return
                 if (process > 100) {
-                    let t = dta[idx1];
-                    dta[idx1] = dta[idx2];
-                    dta[idx2] = t;
-                    ctx.clearRect(0, 0, set.width, set.height);
+                    let t = dta[idx1] 
+                    dta[idx1] = dta[idx2] 
+                    dta[idx2] = t 
+                    ctx.clearRect(0, 0, set.width, set.height) 
                     for (let i = dta.length - 1; i >= 0; i--) {
+                        _drawLine(i)
                         _drawBlock(i)
                     }
                     clearInterval(timer)
                     setTimeout(() => {
-                        for (let i = dta.length - 1; i >= 0; i--) {
-                            emphasized[i] = false;
-                        }
                         for (let i = dta.length - 1; i >= 0; i--) {
                             _drawBlock(i)
                         }
@@ -293,53 +262,51 @@ function _swap(idx1, idx2, _pos = 0) {
                     }, set.staticTime * 5)
                     return
                 }
-                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fillStyle = 'rgba(255,255,255,0.3)' 
                 ctx.fillRect(0, 0, set.width, set.height)
                 const [x1, y1] = __positionCalculator(idx1, set.layerHeight, set.blockSize)
                 const [x2, y2] = __positionCalculator(idx2, set.layerHeight, set.blockSize)
                 for (let i = dta.length - 1; i >= 0; i--) {
-                    if (i === idx1 || i === idx2) continue;
+                    if (i === idx1 || i === idx2) continue 
+                    _drawLine(i)
                     _drawBlock(i)
                 }
-                _line(x1 + (x2 - x1) * process / 100, y1 + (y2 - y1) * process / 100, x2 + (x1 - x2) * process / 100, y2 + (y1 - y2) * process / 100, true)
-
-                _emphasizeRect(dta[idx1], x1 + (x2 - x1) * process / 100, y1 + (y2 - y1) * process / 100, set.blockSize, set.blockSize, set.blockSize / 2)
-                _emphasizeRect(dta[idx2], x2 + (x1 - x2) * process / 100, y2 + (y1 - y2) * process / 100, set.blockSize, set.blockSize, set.blockSize / 2)
+                _line(x1 + (x2 - x1) * process / 100, y1 + (y2 - y1) * process / 100, x2 + (x1 - x2) * process / 100, y2 + (y1 - y2) * process / 100, true, ctx, set)
+                _rect(dta[idx1], x1 + (x2 - x1) * process / 100, y1 + (y2 - y1) * process / 100, set.blockSize, set.blockSize, set.blockSize / 2, true, ctx, set)
+                _rect(dta[idx2], x2 + (x1 - x2) * process / 100, y2 + (y1 - y2) * process / 100, set.blockSize, set.blockSize, set.blockSize / 2,true, ctx, set)
                 process += nonlinear(process, set.speed)
-            }, set.fps);
+            }, set.fps) 
         })
     }
     pq.push(swapMotion, _pos)
 }
 
+/**
+ * @desc 删除动画
+ */
 function _remove(idx, _pos = 0) {
     let shrinkMotion = () => {
         return new Promise((resolve, reject) => {
-            const [x, y] = __positionCalculator(idx, set.layerHeight, set.blockSize);
-            const [x_f, y_f] = __positionCalculator(Math.floor((idx - 1) / 2), set.layerHeight, set.blockSize);
-            let process = 0;
+            const [x, y] = __positionCalculator(idx, set.layerHeight, set.blockSize) 
+            const [x_f, y_f] = __positionCalculator(Math.floor((idx - 1) / 2), set.layerHeight, set.blockSize) 
+            let process = 0 
             let timer = setInterval(function () {
-                if (pq.stopped) {
-                    pq.lock = false
-                    clearInterval(timer)
-                    return
-                }
-                if (pq.paused) return;
+                if(pq.statusCheck(timer)) return
                 if (process > 100) {
-                    ctx.clearRect(0, 0, set.width, set.height);
+                    ctx.clearRect(0, 0, set.width, set.height) 
                     for (let i = dta.length - 1; i >= 0; i--) {
-                        if (i === idx) _drawBlock(i, false, false)
-                        else _drawBlock(i)
+                        if(i !== idx) _drawLine(i)
+                        _drawBlock(i)
                     }
                     clearInterval(timer)
                     resolve()
                     return
                 }
                 ctx.clearRect(0, 0, set.width, set.height)
-                _line(x, y, x + (x_f - x) * (100 - process) / 100, y + (y_f - y) * (100 - process) / 100)
+                _line(x, y, x + (x_f - x) * (100 - process) / 100, y + (y_f - y) * (100 - process) / 100, false, ctx, set)
                 for (let i = dta.length - 1; i >= 0; i--) {
-                    if (i === idx) _drawBlock(i, false, false)
-                    else _drawBlock(i)
+                    if(i !== idx) _drawLine(i)
+                    _drawBlock(i)
                 }
                 process += nonlinear(process, set.speed)
             }, set.fps)
@@ -348,58 +315,53 @@ function _remove(idx, _pos = 0) {
     let removeMotion = () => {
         return new Promise((resolve, reject) => {
             let timer = setInterval(function () {
-                if (pq.stopped) {
-                    pq.lock = false
-                    clearInterval(timer)
-                    return
-                }
-                if (pq.paused) return;
-                _drawBlock(idx, true, false)
+                if(pq.statusCheck(timer)) return
+                _drawBlock(idx, true)
                 ctx.globalAlpha -= 0.025
                 if (ctx.globalAlpha < 0.1) {
                     ctx.globalAlpha = 0
-                    _drawBlock(idx, true, false)
+                    _drawBlock(idx, true)
                     ctx.globalAlpha = 1
-                    dta[idx] = undefined;
-                    emphasized[idx] = false;
+                    dta[idx] = undefined 
+                    emphasized[idx] = false 
                     __updateParam()
-                    ctx.clearRect(0, 0, set.width, set.height);
+                    ctx.clearRect(0, 0, set.width, set.height) 
                     for (let i = dta.length; i >= 0; i--) {
+                        if(i !== idx) _drawLine(i)
                         _drawBlock(i)
                     }
                     clearInterval(timer)
                     resolve()
                 }
             }, set.fps)
-        });
+        }) 
     }
     pq.push(shrinkMotion, _pos)
     pq.push(removeMotion, _pos)
 }
 
+/**
+ * @desc 添加动画
+ */
 function _add(idx, num, _pos = 0) {
     let addMotion = () => {
         return new Promise((resolve, reject) => {
-            dta[idx] = num;
-            ctx.clearRect(0, 0, set.width, set.height);
+            dta[idx] = num 
+            ctx.clearRect(0, 0, set.width, set.height) 
             __updateParam()
             for (let i = dta.length - 1; i >= 0; i--) {
-                if (i === idx) continue;
+                if (i === idx) continue 
+                _drawLine(i)
                 _drawBlock(i)
             }
             ctx.globalAlpha = 0
             let timer = setInterval(function () {
-                if (pq.stopped) {
-                    pq.lock = false
-                    clearInterval(timer)
-                    return
-                }
-                if (pq.paused) return;
-                _drawBlock(idx, false, false);
+                if(pq.statusCheck(timer)) return
+                _drawBlock(idx, false) 
                 ctx.globalAlpha += 0.025
                 if (ctx.globalAlpha > 0.9) {
                     ctx.globalAlpha = 1
-                    _drawBlock(idx, false, false);
+                    _drawBlock(idx, false) 
                     clearInterval(timer)
                     resolve()
                 }
@@ -408,28 +370,24 @@ function _add(idx, num, _pos = 0) {
     }
     let extendMotion = () => {
         return new Promise((resolve, reject) => {
-            const [x, y] = __positionCalculator(idx, set.layerHeight, set.blockSize);
-            const [x_f, y_f] = __positionCalculator(Math.floor((idx - 1) / 2), set.layerHeight, set.blockSize);
-            let process = 0;
+            const [x, y] = __positionCalculator(idx, set.layerHeight, set.blockSize) 
+            const [x_f, y_f] = __positionCalculator(Math.floor((idx - 1) / 2), set.layerHeight, set.blockSize) 
+            let process = 0 
             let timer = setInterval(function () {
-                if (pq.stopped) {
-                    pq.lock = false
-                    clearInterval(timer)
-                    return
-                }
-                if (pq.paused) return;
+                if(pq.statusCheck(timer)) return
                 if (process > 100) {
-                    ctx.clearRect(0, 0, set.width, set.height);
+                    ctx.clearRect(0, 0, set.width, set.height) 
                     for (let i = dta.length - 1; i >= 0; i--) {
+                        _drawLine(i)
                         _drawBlock(i)
                     }
                     clearInterval(timer)
                     resolve()
                     return
                 }
-                _line(x, y, x + (x_f - x) * process / 100, y + (y_f - y) * process / 100)
-                _drawBlock(idx, false, false);
-                _drawBlock(Math.floor((idx - 1) / 2), false, false);
+                _line(x, y, x + (x_f - x) * process / 100, y + (y_f - y) * process / 100, false, ctx, set)
+                _drawBlock(idx) 
+                _drawBlock(Math.floor((idx - 1) / 2)) 
                 process += nonlinear(process, set.speed)
             }, set.fps)
         })
@@ -439,14 +397,14 @@ function _add(idx, num, _pos = 0) {
 }
 
 /*
-    User Interfaces
+    用户接口
 */
+/**
+ * @desc 初始化函数
+ */
 function init(setting, information, element) {
     console.info("[AlgoMotion] Homepage: https://github.com/NicerWang/Algomotion")
     let dpr = window.devicePixelRatio
-    if (setting.hidpi === false) {
-        dpr = 1
-    }
     set = {
         height: setting.height ? setting.height * dpr : 250 * dpr,
         width: setting.width ? setting.width * dpr : 800 * dpr,
@@ -460,13 +418,15 @@ function init(setting, information, element) {
         fps: setting.fps ? 1000 / setting.fps : 1000 / 60,
         speed: setting.speed ? setting.speed : 1.0,
         staticTime: setting.staticTime ? setting.staticTime / 10 : 80
-    };
+    }
+    if (setting.hidpi === false) {
+        dpr = 1
+    }
     set.layerHeight = set.maxLayerHeight
     set.blockSize = set.blockMaxSize
-    let info = {
-        dta: information.dta ? information.dta : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-        mvs: information.mvs ? information.mvs : []
-    };
+    dta = information.dta ? information.dta : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    mvs = information.mvs ? information.mvs : []
+    emphasized.length = dta.length
     element.setAttribute('width', set.width)
     element.setAttribute('height', set.height)
     element.setAttribute('style', "width:" + set.width / dpr + "px;height:" + set.height / dpr + "px")
@@ -476,13 +436,10 @@ function init(setting, information, element) {
         alert("[AlgoMotion][Error] Your browser does not support canvas!")
         return
     }
-    dta = info.dta
-    emphasized.length = dta.length
     __updateParam()
-    __show()
+    _show()
     if (setting.motion) {
         motion = true
-        mvs = info.mvs
         pq.pause(true)
         if (mr === null) {
             mr = __defaultMovesReader
@@ -492,18 +449,25 @@ function init(setting, information, element) {
     }
 }
 
+/**
+ * @desc 设置新的MovesReader以替代默认
+ */
 function setMovesReader(movesReader) {
-    mr = movesReader;
+    mr = movesReader 
 }
 
+/**
+ * @desc 设置动画位置
+ */
 function setPosition(pos) {
     pq.stop()
     ctx.globalAlpha = 1
-    emphasized = kfs[pos].emphasized.concat();
-    dta = kfs[pos].dta.concat();
+    emphasized = kfs[pos].emphasized.concat() 
+    dta = kfs[pos].dta.concat() 
     __updateParam()
     ctx.clearRect(0, 0, set.width, set.height)
     for (let i = dta.length - 1; i >= 0; i--) {
+        _drawLine(i)
         _drawBlock(i)
     }
     setTimeout(() => {
@@ -511,81 +475,80 @@ function setPosition(pos) {
     }, set.staticTime * 5)
 }
 
+/**
+ * @desc 动画暂停与继续
+ */
 function pause(status) {
     pq.pause(status)
 }
 
+/**
+ * @desc 析构函数
+ */
 function destroy() {
     pq.destroy()
     set = null
     ctx = null
     mr = null
-    mvs = null
     dta = null
     emphasized = null
-    dta = [];
-    emphasized = [];
-    kfs = [];
+    mvs = [] 
+    dta = [] 
+    emphasized = [] 
+    kfs = [] 
 }
 
+/**
+ * @desc 交换结点
+ */
 function swapNode(idx1, idx2, _pos) {
-    _swap(idx1, idx2, _pos);
+    _swap(idx1, idx2, _pos) 
 }
 
+/**
+ * @desc 重点显示结点
+ */
 function emphasizeNode(idx, status, _pos = 0) {
     let emphasizeMotion = () => {
         return new Promise((resolve, reject) => {
-            const [x, y] = __positionCalculator(idx, set.layerHeight, set.blockSize);
             emphasized[idx] = status
-            _drawBlock(idx, false)
-            _drawBlock(Math.floor((idx - 1) / 2), false, false)
-            let process = 0
-            let timer = setInterval(function () {
-                if (pq.stopped) {
-                    pq.lock = false
-                    clearInterval(timer)
-                    return
-                }
-                if (pq.paused) return;
-                process += 10
-                if (process > 100) {
-                    resolve()
-                }
-            }, set.staticTime)
+            _drawBlock(idx)
+            _drawBlock(Math.floor((idx - 1) / 2))
+            _blank(pq, resolve, set.staticTime)
         })
     }
     pq.push(emphasizeMotion, _pos)
 }
 
+/**
+ * @desc 清空重点显示状态
+ */
 function clear(_idx = 0) {
-    __show(_idx,true);
+    _show(_idx,true) 
 }
 
+/**
+ * @desc 空白动作
+ */
 function addBlank(_pos = 0) {
     let blackMotion = () => {
         return new Promise((resolve, reject) => {
-            let process = 0
-            let timer = setInterval(function () {
-                if (pq.stopped) {
-                    pq.lock = false
-                    clearInterval(timer)
-                    return
-                }
-                if (pq.paused) return;
-                process += 10
-                if (process >= 100) {
-                    resolve()
-                }
-            }, set.staticTime)
+            _blank(pq, resolve, set.staticTime)
         })
     }
     pq.push(blackMotion, _pos)
 }
 
-function removeNode(idx, _pos) {
+/**
+ * @desc 删除结点
+ */
+function removeNode(idx, _pos = 0) {
     _remove(idx, _pos)
 }
 
+/**
+ * @desc 新增结点
+ */
 function addNode(idx, num, _pos = 0) {
     _add(idx, num, _pos)
 }
@@ -601,4 +564,5 @@ export {
     emphasizeNode,
     removeNode,
     addNode,
+    addBlank
 }
