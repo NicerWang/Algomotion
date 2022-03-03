@@ -83,7 +83,7 @@ export function _line(fromX, fromY, toX, toY, isEmphasized, ctx, set) {
     ctx.strokeStyle = set.fillColor;
     if (isEmphasized) {
         ctx.lineWidth = 15
-        ctx.strokeStyle = set.emphasisTextColor
+        ctx.strokeStyle = set.emphasisLineColor
     }
     ctx.beginPath();
     ctx.moveTo(fromX + set.blockSize / 2, fromY + set.blockSize / 2);

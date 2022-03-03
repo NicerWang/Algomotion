@@ -22,23 +22,23 @@ npm i algomotion
 
 * Set
 
-  | 名称                | 含义（涉及数字，单位均为px）                   | 默认值    |
-  | ------------------- | ---------------------------------------------- | --------- |
-  | `height`            | `Canvas`高度                                   | 250       |
-  | `width`             | `Canvas`宽度                                   | 800       |
-  | `blockMaxSize`      | 数字块(最大)边长(圆形直径)                     | 50        |
-  | `emphasisColor`     | 强调块背景色                                   | #bedce3   |
-  | `emphasisTextColor` | 强调块字体颜色                                 | #1c474d   |
-  | `textColor`         | 普通块字体颜色                                 | #eefcf5   |
-  | `fillColor`         | 普通块背景色                                   | #14cdc8   |
-  | `barrierColor`      | `Barrier`的颜色                                | red       |
-  | `font`              | 数字大小                                       | 20        |
-  | `hidpi`             | HiDPI支持                                      | true      |
-  | `fps`               | 动画帧率                                       | 60        |
-  | `speed`             | 动画执行速度                                   | 1.0       |
-  | `motion`            | 是否使用`movesReader`读取`mvs`中的操作步骤     | false     |
-  | `postion`           | 启用`motion`时，绑定`mvs`执行的进度            | undefined |
-  | `staticTime`        | 定义一些静止动作的持续时间(如强调、空白动作等) | 800       |
+  | 名称                | 含义（涉及数字，单位均为px）                               | 默认值    |
+  | ------------------- | ---------------------------------------------------------- | --------- |
+  | `height`            | `Canvas`高度                                               | 250       |
+  | `width`             | `Canvas`宽度                                               | 800       |
+  | `blockMaxSize`      | 数字块(最大)边长(圆形直径)                                 | 50        |
+  | `emphasisColor`     | 强调块背景色                                               | #bedce3   |
+  | `emphasisTextColor` | 强调块字体颜色                                             | #1c474d   |
+  | `textColor`         | 普通块字体颜色                                             | #eefcf5   |
+  | `fillColor`         | 普通块背景色                                               | #14cdc8   |
+  | `barrierColor`      | `Barrier`的颜色                                            | red       |
+  | `font`              | 数字大小                                                   | 20        |
+  | `hidpi`             | HiDPI支持                                                  | true      |
+  | `fps`               | 动画帧率                                                   | 60        |
+  | `speed`             | 动画执行速度                                               | 1.0       |
+  | `motion`            | 是否使用`movesReader`读取`mvs`中的操作步骤                 | false     |
+  | `postion`           | 启用`motion`时，绑定`mvs`执行的进度                        | undefined |
+  | `staticTime`        | 定义一些静止动作的持续时间(如强调、空白动作等)(单位为浩渺) | 800       |
 
 > `position`使用方法：
 >
@@ -101,9 +101,10 @@ npm i algomotion
 
 * Set
 
-  | 名称             | 含义（涉及数字，单位均为px） | 默认值 |
-  | ---------------- | ---------------------------- | ------ |
-  | `maxLayerHeight` | 树每一层的最大高度           | 70     |
+  | 名称                | 含义（涉及数字，单位均为px） | 默认值  |
+  | ------------------- | ---------------------------- | ------- |
+  | `maxLayerHeight`    | 树每一层的最大高度           | 70      |
+  | `emphasisLineColor` | 强调连线颜色                 | #1c474d |
 
   > 另外，树枝的颜色为`fillColor`，交换(`swap`)时会变为`emphasisTextColor`。
 
@@ -128,9 +129,10 @@ npm i algomotion
 
 * Set
 
-  | 名称        | 含义（涉及数字，单位均为px）         | 默认值 |
-  | ----------- | ------------------------------------ | ------ |
-  | `blockSize` | 每个结点的大小(替代原`blockMaxSize`) | 40     |
+  | 名称                | 含义（涉及数字，单位均为px）         | 默认值  |
+  | ------------------- | ------------------------------------ | ------- |
+  | `blockSize`         | 每个结点的大小(替代原`blockMaxSize`) | 40      |
+  | `emphasisLineColor` | 强调连线颜色                         | #1c474d |
 
 * Info
 

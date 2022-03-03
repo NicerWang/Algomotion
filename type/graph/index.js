@@ -210,6 +210,7 @@ function init(setting, information, element) {
         blockSize: setting.blockSize ? setting.blockSize * dpr : 40 * dpr,
         emphasisColor: setting.emphasisColor ? setting.emphasisColor : '#bedce3',
         emphasisTextColor: setting.emphasisTextColor ? setting.emphasisTextColor : '#1c474d',
+        emphasisLineColor: setting.emphasisLineColor ? setting.emphasisLineColor : '#1c474d',
         textColor: setting.textColor ? setting.textColor : '#eefcf5',
         fillColor: setting.fillColor ? setting.fillColor : '#14cdc8',
         font: setting.font ? setting.font * dpr : 20 * dpr,
