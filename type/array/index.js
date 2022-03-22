@@ -73,11 +73,22 @@ function __defaultMovesReader(mvs, start = 0, isInit = false) {
                 kfs.push(kf) 
             }
         } else if (op[1] === "barrier") {
-            addBarrier(argus[0], i)
+            addBarrier(argus, i)
             if (isInit) {
                 kf.barrier = kf.barrier.concat()
-                kf.barrier[argus[0]] = true
+                for(let j of argus){
+                    kf.barrier[j] = true
+                }
                 kfs.push(kf) 
+            }
+        } else if (op[1] === "unbarrier"){
+            removeBarrier(argus[0], i)
+            if (isInit) {
+                kf.barrier = kf.barrier.concat()
+                for(let j of argus){
+                    kf.barrier[j] = false
+                }
+                kfs.push(kf)
             }
         } else if (op[1] === "clear") {
             clear(i)
@@ -153,7 +164,7 @@ function __updateGap(length) {
  * @desc 绘制块
  */
 function _drawBlock(idx, isEmphasized = false, needClear = false) {
-    let pos = gap + (gap + set.blockSize) * idx 
+    let pos = gap + (gap + set.blockSize) * idx
     if (needClear) {
         ctx.clearRect(pos - ctx.lineWidth, mid - ctx.lineWidth, set.blockSize + 2 * ctx.lineWidth, set.blockSize + 2 * ctx.lineWidth) 
     }
@@ -508,11 +519,39 @@ function emphasizeBlock(idx, status, _pos = 0) {
 /**
  * @desc 添加分隔符
  */
-function addBarrier(idx, _pos = 0) {
+function addBarrier(idxs, _pos = 0) {
     let barrierMotion = () => {
         return new Promise((resolve, reject) => {
-            barrier[idx] = true 
-            _drawBlock(idx)
+            for(let i = 0; i < idxs.length; i++){
+                barrier[idxs[i]] = true
+                _drawBlock(idxs[i])
+            }
+            if(idxs.length === undefined){
+                barrier[idxs] = true
+                _drawBlock(idxs)
+            }
+            _blank(pq, resolve, set.staticTime)
+        })
+    }
+    pq.push(barrierMotion, _pos)
+}
+
+/**
+ * @desc 删除分隔符
+ */
+function removeBarrier(idxs, _pos = 0) {
+    let barrierMotion = () => {
+        return new Promise((resolve, reject) => {
+            for(let i = 0; i < idxs.length; i++){
+                barrier[idxs[i]] = false
+            }
+            if(idxs.length === undefined){
+                barrier[idxs] = false
+            }
+            ctx.clearRect(0,0,set.width,set.height)
+            for(let i = 0; i < dta.length; i++) {
+                _drawBlock(i);
+            }
             _blank(pq, resolve, set.staticTime)
         })
     }
@@ -562,6 +601,7 @@ export {
     swapBlock,
     emphasizeBlock,
     removeBlock,
+    removeBarrier,
     addBlock,
     addBarrier
 }

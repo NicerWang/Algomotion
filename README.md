@@ -87,13 +87,14 @@ npm i algomotion
 
 #### 方法
 
-| 名称                          | 作用                                          |
-| ----------------------------- | --------------------------------------------- |
-| `swapBlock(idx1,idx2)`        | 提供`index`，展示交换动画                     |
-| `emphasizeBlock(idx,boolean)` | 提供`index`和一个布尔值，用于切换是否强调展示 |
-| `addBarrier(idx)`             | 提供`index`，在对应块之前放置分隔标记         |
-| `addBlock(idx,num)`           | 添加一个新数字块                              |
-| `removeBlock(idx)`            | 删除一个数字块                                |
+| 名称                          | 作用                                                         |
+| ----------------------------- | ------------------------------------------------------------ |
+| `swapBlock(idx1,idx2)`        | 提供`index`，展示交换动画                                    |
+| `emphasizeBlock(idx,boolean)` | 提供`index`和一个布尔值，用于切换是否强调展示                |
+| `addBarrier(arr)`             | 提供一个数组，数组内为`index`，用于在对应块之前放置分隔标记（兼容旧参数：仅一个数字） |
+| `removeBarrier(arr)`          | 提供一个数组，数组内为`index`，用于在对应块之前删除分隔标记（兼容旧参数：仅一个数字） |
+| `addBlock(idx,num)`           | 添加一个新数字块                                             |
+| `removeBlock(idx)`            | 删除一个数字块                                               |
 
 ### Tree
 
@@ -151,18 +152,17 @@ npm i algomotion
 
 * `Array`
 
-  支持的`mvs`格式(7种)：
+  支持的`mvs`格式(8种)：
 
-  `get(index)`,`swap(index1,index2)`,`add(idx,number)`,`remove(index)`,`barrier(index)`,`clear()`,`blank()`
+  `get(index)`,`swap(index1,index2)`,`add(idx,number)`,`remove(index)`,`barrier(arr)`,`unbarrier(arr)`,`clear()`,`blank()`
 
   其中：
 
   * `get(index)`为高亮一次第`index`个元素
-  * `barrier(index)`为在第`index`个元素前添加标记，即[`Demo`](#Demo)中的`AddBarrier`
-
+  * `barrier(arr)`在第`index`个元素前添加标记，即[`Demo`](#Demo)中的`AddBarrier`，可以传递多个参数作为`index`，如`barrier(1,2)`
+  * `unbarrier(arr)`用法同上，但是用以删除标记
   * `clear()`为清除所有`barrier`标记
   * `blank()`为什么都不做，等待一次，用于配合其他动作
-
 * `Tree`
 
   支持的`mvs`格式(5种)：

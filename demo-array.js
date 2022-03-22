@@ -5,7 +5,7 @@ import {
     destroy,
     emphasizeBlock,
     init,
-    pause,
+    pause, removeBarrier,
     removeBlock,
     setPosition,
     swapBlock
@@ -32,7 +32,7 @@ window.onload = () => {
     }
     let info = {
         'dta': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-        'mvs': ['get(0)', 'barrier(1)', 'get(1)', 'swap(0,1)', 'add(2,88)', 'remove(3)', 'swap(2,3)', 'clear()', 'get(5)', 'swap(4,5)']
+        'mvs': ['get(0)', 'barrier(1,2,3)', 'get(1)', 'swap(0,1)', 'add(2,88)', 'remove(3)', 'swap(2,3)', 'unbarrier(1,2)', 'clear()', 'get(5)', 'swap(4,5)']
     }
     let element = document.querySelector("#selector")
     document.querySelector("#positions").innerHTML = info.mvs.join(",")
@@ -65,7 +65,10 @@ window.onload = () => {
         }
     }
     document.querySelector("#barrier").onclick = () => {
-        addBarrier(3);
+        addBarrier([3,4]);
+    }
+    document.querySelector("#rbarrier").onclick = () => {
+        removeBarrier(3)
     }
     document.querySelector("#ctl_c").onclick = () => {
         pause(false)
